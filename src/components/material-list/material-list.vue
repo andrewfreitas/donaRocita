@@ -24,19 +24,17 @@
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
-      :items="items"
+      :items="materials"
       v-bind:search="search"
       class="elevation-1"
     >
     <template slot="items" slot-scope="props">
-      <td>{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.calories }}</td>
-      <td class="text-xs-right">{{ props.item.fat }}</td>
-      <td class="text-xs-right">{{ props.item.carbs }}</td>
-      <td class="text-xs-right">{{ props.item.protein }}</td>
-      <td class="text-xs-right">{{ props.item.sodium }}</td>
-      <td class="text-xs-right">{{ props.item.calcium }}</td>
-      <td class="text-xs-right">{{ props.item.iron }}</td>
+      <td class="text-xs-right">{{ props.item.name }}</td>
+      <td class="text-xs-right">{{ props.item.description }}</td>
+      <td class="text-xs-right">{{ props.item.category }}</td>
+      <td class="text-xs-right">{{ props.item.quantity }}</td>
+      <td class="text-xs-right">{{ props.item.unit }}</td>
+      <td class="text-xs-right">{{ props.item.price }}</td>
     </template>
   </v-data-table>
       </v-card>
@@ -48,7 +46,7 @@
 <script>
 import materialsRegister from '@/components/material-register/material-register';
 export default {
-  name: 'MaterialList ',
+  name: 'MaterialList',
   components: {
       materialsRegister
   },
@@ -59,14 +57,13 @@ data () {
         headers: [
           {
             text: 'Nome do Material',
-            align: 'left',
-            sortable: true,
             value: 'name'
           },
-          { text: 'Descrição do Material', value: 'calories' },
-          { text: 'Quantidade', value: 'fat' },
-          { text: 'Unid. Medida', value: 'carbs' },
-          { text: 'Preço', value: 'protein' }
+          { text: 'Descrição do Material', value: 'description' },
+          { text: 'Categoria', value: 'category' },
+          { text: 'Quantidade', value: 'quantity' },
+          { text: 'Unid. Medida', value: 'unit' },
+          { text: 'Preço', value: 'price' }
         ],
         materials:[],
         items: [
@@ -85,72 +82,9 @@ data () {
             fat: 9.0,
             carbs: 37,
             protein: 4.3
-          },
-          {
-            value: false,
-            name: 'Eclair',
-            calories: 262,
-            fat: 16.0,
-            carbs: 23,
-            protein: 6.0
-          },
-          {
-            value: false,
-            name: 'Cupcake',
-            calories: 305,
-            fat: 3.7,
-            carbs: 67,
-            protein: 4.3
-          },
-          {
-            value: false,
-            name: 'Gingerbread',
-            calories: 356,
-            fat: 16.0,
-            carbs: 49,
-            protein: 3.9
-          },
-          {
-            value: false,
-            name: 'Jelly bean',
-            calories: 375,
-            fat: 0.0,
-            carbs: 94,
-            protein: 0.0
-          },
-          {
-            value: false,
-            name: 'Lollipop',
-            calories: 392,
-            fat: 0.2,
-            carbs: 98,
-            protein: 0
-          },
-          {
-            value: false,
-            name: 'Honeycomb',
-            calories: 408,
-            fat: 3.2,
-            carbs: 87,
-            protein: 6.5
-          },
-          {
-            value: false,
-            name: 'Donut',
-            calories: 452,
-            fat: 25.0,
-            carbs: 51,
-            protein: 4.9
-          },
-          {
-            value: false,
-            name: 'KitKat',
-            calories: 518,
-            fat: 26.0,
-            carbs: 65,
-            protein: 7,
-            sodium: 54
           }
+
+
         ]
       }
 },
