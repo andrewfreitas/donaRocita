@@ -92,7 +92,10 @@ data () {
 
       this.$on('categoryObject',function (categoryObject) {
           this.categories.push(categoryObject);
-      });         
+          this.$localStorage.set('categories', JSON.stringify(this.categories));
+      });
+      
+      this.categories = JSON.parse(this.$localStorage.get('categories'));
   },  
 }
 </script>

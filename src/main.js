@@ -5,7 +5,9 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import('../node_modules/vuetify/dist/vuetify.min.css') // Ensure you are using css-loader
- 
+import VueLocalStorage from 'vue-localstorage'
+
+Vue.use(VueLocalStorage);
 Vue.use(Vuetify);
 
 

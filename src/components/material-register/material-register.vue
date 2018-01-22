@@ -37,6 +37,7 @@
                 label="Categoria"
                 placeholder="Selecione"
                 :items="categories"
+                item-text="name"
                 v-model="material.category"
                 ref="material.category"
                 required
@@ -154,13 +155,15 @@ export default {
           this.$parent.$emit('showModal', showModal);
       }
   },
+  mounted(){
+    this.categories = JSON.parse(this.$localStorage.get('categories'));
+  },
   methods: {
       actvModal(showModal){
           this.showModal = showModal;
       },
       saveMaterial(){
         if (this.$refs.form.validate()) {
-          this.addCategory(this.material.name);
           this.$parent.$emit('materialObject', _.clone(this.material));
           this.clearForm();
           this.showModal = false;
