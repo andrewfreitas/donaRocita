@@ -102,7 +102,9 @@ data () {
           this.materials.push(materialObject);
            this.$localStorage.set('materials', JSON.stringify(this.materials));
           console.log(this.materials);
-      });         
+      });
+      
+      this.materials = JSON.parse(this.$localStorage.get('materials'));
   },  
 }
 </script>
