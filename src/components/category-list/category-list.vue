@@ -6,7 +6,7 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
-        <v-toolbar color="indigo darken-4" dark>
+        <v-toolbar color="grey" dark>
           <v-toolbar-title>Dona Rosita</v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
@@ -57,27 +57,7 @@ data () {
           },
           { text: 'Descrição do Material', value: 'description' }
         ],
-        categories:[],
-        items: [
-          {
-            value: false,
-            name: 'Frozen Yogurt',
-            calories: 159,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0
-          },
-          {
-            value: false,
-            name: 'Ice cream sandwich',
-            calories: 237,
-            fat: 9.0,
-            carbs: 37,
-            protein: 4.3
-          }
-
-
-        ]
+        categories:[]
       }
 },
   methods: {
@@ -95,7 +75,7 @@ data () {
           this.$localStorage.set('categories', JSON.stringify(this.categories));
       });
       
-      this.categories = JSON.parse(this.$localStorage.get('categories'));
+      this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
   },  
 }
 </script>

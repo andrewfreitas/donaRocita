@@ -64,8 +64,7 @@ export default {
         name:'',
         description:''
       },
-      valid:true,
-      categories:[],             
+      valid:true,          
       showModal: false,
       select: null,      
     }

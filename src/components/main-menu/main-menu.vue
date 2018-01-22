@@ -18,7 +18,11 @@
             <v-btn  dark large color="indigo" href="#/category-list" router>
               <v-icon dark>web</v-icon>
                 Categorias
-            </v-btn>                               
+            </v-btn>
+            <v-btn  dark large color="deep-orange darken-3" href="#/recipe-list" router>
+              <v-icon dark>gesture</v-icon>
+                Receitas
+            </v-btn>                                             
         </v-list>
       </v-card>
     </v-flex>

@@ -6,7 +6,7 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
-        <v-toolbar color="grey" dark>
+        <v-toolbar color="deep-orange darken-3" dark>
           <v-toolbar-title>Dona Rosita</v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
@@ -17,9 +17,9 @@
         v-model="search"
       ></v-text-field>
       <v-spacer></v-spacer>
-            <v-btn dark small color="orange darken-4" @click="openModal()">
-                <v-icon dark>assignment</v-icon>
-                Inclusão de Materiais
+            <v-btn dark small color="amber darken-4" @click="openModal()">
+                <v-icon dark>gesture</v-icon>
+                Inclusão de Receitas
             </v-btn>          
         </v-toolbar>
   <v-data-table
@@ -40,19 +40,19 @@
       </v-card>
     </v-flex>
   </v-layout>
-  <materials-register :show-materials-register.sync="showMaterialsRegister"></materials-register> 
+  <recipe-register :show-recipe-register.sync="showRecipeRegister"></recipe-register> 
 </div>
 </template>
 <script>
-import materialsRegister from '@/components/material-register/material-register';
+import recipeRegister from '@/components/recipe-register/recipe-register';
 export default {
-  name: 'MaterialList',
+  name: 'RecipeList',
   components: {
-      materialsRegister
+      recipeRegister
   },
 data () {
       return {
-          showMaterialsRegister: false,
+          showRecipeRegister: false,
           search: '',
         headers: [
           {
@@ -90,12 +90,12 @@ data () {
 },
   methods: {
       openModal(){
-          this.showMaterialsRegister = true;
+          this.showRecipeRegister = true;
       }
   },
     mounted () {
       this.$on('showModal',function (show) {
-          this.showMaterialsRegister = show;
+          this.showRecipeRegister = show;
       }); 
 
       this.$on('materialObject',function (materialObject) {
