@@ -116,7 +116,7 @@
                 <td class="text-xs-right">{{ props.item.quantity }}</td>
                 <td class="text-xs-right">{{ props.item.unit }}</td>
                 <td class="text-xs-right">
-                  <v-btn fab dark  small color="red" @click="removeMaterial(props.item.materialName)">
+                  <v-btn fab dark  small color="red" @click="removeMaterial(props.item.recipeItemId)">
                     <v-icon dark>remove</v-icon>
                   </v-btn>                  
                 </td>
@@ -162,6 +162,7 @@
 <script>
 
 import _ from 'lodash';
+import _guid from 'Guid';
 
 export default {
   name: 'recipeRegister',
@@ -216,7 +217,9 @@ export default {
       },
       addRecipe(){
         if (this.$refs.form.validate()) {
+          var guid = _guid.create();        
           this.recipes.push({
+            recipeItemId:guid.value,
             materialName: this.selectedMaterial.name,
             quantity: this.recipe.quantity,
             unit: this.recipe.unit
@@ -230,8 +233,10 @@ export default {
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
       },
-      removeMaterial(material){
-
+      removeMaterial(itemId){
+        this.recipes = _.remove(this.recipes, function(recipeItem) {
+          return recipeItem.recipeItemId != itemId;
+        })
       },
       saveRecipe(){
         this.$parent.$emit('recipeObject', _.clone(this.recipes));
