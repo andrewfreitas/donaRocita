@@ -54,6 +54,7 @@
 <script>
 
 import _ from 'lodash';
+import _guid from 'Guid';
 
 export default {
   name: 'categoryRegister',
@@ -61,6 +62,7 @@ export default {
   data () {
     return {
       category:{
+        id:'',
         name:'',
         description:''
       },
@@ -83,6 +85,8 @@ export default {
       },
       saveCategory(){
         if (this.$refs.form.validate()) {
+          var guid = _guid.create();
+          this.category.id =guid;
           this.$parent.$emit('categoryObject', _.clone(this.category));
           this.clearForm();
           this.showModal = false;

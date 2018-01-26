@@ -42,7 +42,20 @@
                 ref="material.category"
                 required
               ></v-select>
-            </v-flex>          
+            </v-flex>
+            <v-flex xs12>
+                  <v-select
+                    label="Unidades de Medida permitidas para este Material"
+                    placeholder="Selecione"
+                    :items="items"
+                    chips
+                    tags
+                    v-model="material.unities"
+                    ref="material.unities"
+                    persistent-hint
+                    required
+                  ></v-select>
+            </v-flex>                       
             <v-flex xs12 sm4>
               <v-text-field
                 label="Quantidade"
@@ -52,19 +65,7 @@
                 counter="5"
                 required
               ></v-text-field>
-            </v-flex>
-            <v-flex xs12 sm4>
-              <v-select
-                label="Unid. Medida"
-                placeholder="Selecione"
-                :rules="unitMaterialRules"
-                :items="items"
-                v-model="material.unit"
-                ref="material.unit"
-                persistent-hint
-                required
-              ></v-select>
-            </v-flex>
+            </v-flex>           
             <v-flex xs12 sm4>
               <v-text-field
                 label="Preço"
@@ -101,6 +102,7 @@
 <script>
 
 import _ from 'lodash';
+import _guid from 'Guid';
 
 export default {
   name: 'materialsRegister',
@@ -108,11 +110,12 @@ export default {
   data () {
     return {
       material:{
+        id:'',
         name:'',
         category:'',
         description:'',
         quantity:'',
-        unit:'',
+        unities:'',
         price:'',
       },
       valid:true,
@@ -164,6 +167,8 @@ export default {
       },
       saveMaterial(){
         if (this.$refs.form.validate()) {
+          var guid = _guid.create();
+          this.material.id =guid;
           this.$parent.$emit('materialObject', _.clone(this.material));
           this.clearForm();
           this.showModal = false;

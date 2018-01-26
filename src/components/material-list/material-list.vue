@@ -33,7 +33,9 @@
       <td class="text-xs-right">{{ props.item.description }}</td>
       <td class="text-xs-right">{{ props.item.category.name }}</td>
       <td class="text-xs-right">{{ props.item.quantity }}</td>
-      <td class="text-xs-right">{{ props.item.unit }}</td>
+      <td class="text-xs-right">
+        <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.name">{{ item }}</v-chip>
+      </td>
       <td class="text-xs-right">{{ props.item.price }}</td>
     </template>
   </v-data-table>

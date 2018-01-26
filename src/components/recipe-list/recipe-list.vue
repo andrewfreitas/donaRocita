@@ -24,18 +24,18 @@
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
-      :items="materials"
+      :items="recipes"
       v-bind:search="search"
       class="elevation-1"
     >
     <template slot="items" slot-scope="props">
       <td class="text-xs-right">{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.description }}</td>
-      <td class="text-xs-right">{{ props.item.category.name }}</td>
-      <td class="text-xs-right">{{ props.item.quantity }}</td>
-      <td class="text-xs-right">{{ props.item.unit }}</td>
-      <td class="text-xs-right">{{ props.item.price }}</td>
     </template>
+    <template slot="expand" slot-scope="props">
+      <v-card flat>
+        <v-card-text>Peek-a-boo!</v-card-text>
+      </v-card>
+    </template>    
   </v-data-table>
       </v-card>
     </v-flex>
@@ -56,16 +56,15 @@ data () {
           search: '',
         headers: [
           {
-            text: 'Nome do Material',
+            text: 'Nome da Receita',
             value: 'name'
           },
-          { text: 'Descrição do Material', value: 'description' },
-          { text: 'Categoria', value: 'category' },
-          { text: 'Quantidade', value: 'quantity' },
-          { text: 'Unid. Medida', value: 'unit' },
-          { text: 'Preço', value: 'price' }
+          {
+            text: 'Descrição da Receita',
+            value: 'description'
+          }          
         ],
-        materials:[],
+        recipes:[],
         items: [
           {
             value: false,
@@ -98,13 +97,12 @@ data () {
           this.showRecipeRegister = show;
       }); 
 
-      this.$on('materialObject',function (materialObject) {
-          this.materials.push(materialObject);
-           this.$localStorage.set('materials', JSON.stringify(this.materials));
-          console.log(this.materials);
+      this.$on('recipeObject',function (recipeObject) {
+          this.recipes.push(recipeObject);
+           this.$localStorage.set('recipes', JSON.stringify(this.recipeObject));
       });
       
-      this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
   },  
 }
 </script>

@@ -1,86 +1,160 @@
 <template>
-      <v-dialog v-model="showModal" persistent  max-width="500px">
+      <v-dialog v-model="showModal" persistent  max-width="800px">
         <v-card>
             <v-toolbar color="deep-orange darken-3" dark>
               <v-icon dark>gesture</v-icon>
             <v-toolbar-title class="white--text">Inclusão de Receita</v-toolbar-title>
             </v-toolbar>
             <v-spacer></v-spacer>
-  <v-layout justify-center>
-    <v-form v-model="valid" ref="form" lazy-validation>
-      <v-flex xs12>
-        <v-card ref="form">
-          <v-card-text>
-            <v-layout row wrap>
-            <v-flex xs12>
-              <v-text-field box dark
+    <v-stepper v-model="e1" dark class="mt-2">
+      <v-stepper-header>
+        <v-stepper-step step="1" :complete="e1 > 1">Nome da Receita</v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="2" :complete="e1 > 2">Itens da Receita</v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="3">Salvar a Receita</v-stepper-step>
+      </v-stepper-header>
+      <v-stepper-items>
+        <v-stepper-content step="1">
+          <v-card color="secondary" class="mb-5" height="300px">
+            <v-card-text>
+              <v-text-field dark
                 label="Nome da Receita"
                 v-model="recipe.name"
                 required
                 ref="recipe.name"
                 counter="30"
               ></v-text-field>
-            </v-flex>
             <v-flex xs12>
-              <v-select
-                label="Materiais Disponíveis"
-                placeholder="Selecione"
-                :items="materials"
-                item-text="name"
-                v-model="selectedMaterial"
-                ref="recipe.materials"
+              <v-text-field dark
+                label="Descrição da Receita"              
+                v-model="recipe.description"
                 required
-              ></v-select>
-            </v-flex>
-            <v-flex xs12 sm5>
-              <v-text-field
-                label="Quantidade"
-                placeholder="0"
-                v-model="recipe.quantity"
-                ref="recipe.quantity"
-                counter="5"
-                :suffix="selectedMaterial.unit"
-                required
+                ref="recipe.description"
+                counter="30"
+                multi-line
               ></v-text-field>
             </v-flex>                  
-            </v-layout>
-          </v-card-text>
-          <v-divider></v-divider>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn dark small @click="showModal = false" color="deep-orange darken-3">
-              <v-icon dark>replay</v-icon>
-              Fechar</v-btn>
-            <v-btn dark small @click="addRecipe()" color="deep-orange darken-3" :disabled="!valid">
-              <v-icon dark>done</v-icon>
-              Incluir Material
-              </v-btn>
-            <v-btn dark small @click="saveCategory()" color="green" :disabled="!valid">
-              <v-icon dark>done</v-icon>
-              Salvar Receita
-              </v-btn>              
-          </v-card-actions>
-        </v-card>
-      </v-flex>
-    </v-form>
-  </v-layout>
-    <v-layout row>
-    <v-flex xs12>
-      <v-card>
-        <v-divider></v-divider>
-  <v-data-table
-      v-bind:headers="headers"
-      :items="recipes"
-      class="elevation-1"
-    >
-    <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.materialName }}</td>
-      <td class="text-xs-right">{{ props.item.quantity }}</td>
-    </template>
-  </v-data-table>
-      </v-card>
-    </v-flex>
-  </v-layout>                        
+            </v-card-text>        
+          </v-card>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Continuar</v-btn>
+          <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+        </v-stepper-content>
+        <v-stepper-content step="2">
+          <v-card color="secondary" class="mb-2" height="100px">
+            <v-form v-model="valid" ref="form" lazy-validation>
+            <v-card-text ref="form">
+              <v-layout row wrap>
+                <v-flex xs12 sm2>
+                  <v-select
+                    label="Categorias"
+                    placeholder="Selecione"
+                    :items="categories"
+                    item-text="name"
+                    v-model="selectedCategory"
+                    ref="recipe.categories"
+                    required
+                    @change="getMaterials()"
+                  ></v-select>
+                </v-flex>
+                <v-spacer></v-spacer>
+                <v-flex xs12 sm4>
+                  <v-select
+                    label="Materiais Disponíveis"
+                    placeholder="Selecione"
+                    :items="materials"
+                    item-text="name"
+                    v-model="selectedMaterial"
+                    ref="recipe.materials"
+                    required
+                  ></v-select>
+                </v-flex>    
+                <v-spacer></v-spacer>            
+                <v-flex xs12 sm1>
+                  <v-text-field
+                    label="Quantidade"
+                    placeholder="0"
+                    v-model="recipe.quantity"
+                    ref="recipe.quantity"
+                    counter="5"
+                    required
+                  ></v-text-field>
+                </v-flex>
+                <v-spacer></v-spacer>
+                <v-flex xs12 sm2>
+                  <v-select
+                    label="Unid. Medida"
+                    placeholder="Selecione"
+                    :items.sync="items"
+                    v-model="recipe.unit"
+                    ref="recipe.unit"
+                    persistent-hint
+                    required
+                  ></v-select>
+                </v-flex>
+                <v-spacer></v-spacer>
+                <v-flex xs12 sm1>
+                  <v-btn dark fab small @click="addRecipe()" color="indigo" :disabled="!valid">
+                    <v-icon dark>add</v-icon>
+                  </v-btn>                   
+                </v-flex>                              
+              </v-layout>
+            </v-card-text>
+            </v-form>          
+          </v-card>
+        <v-layout row>
+        <v-flex xs12>
+          <v-card>
+            <v-data-table
+                v-bind:headers="headers"
+                :items="recipes"
+                class="elevation-1"
+                rows-per-page-text = "Itens por página"
+              >
+              <template slot="items" slot-scope="props"> 
+                <td class="text-xs-right">{{ props.item.materialName }}</td>
+                <td class="text-xs-right">{{ props.item.quantity }}</td>
+                <td class="text-xs-right">{{ props.item.unit }}</td>
+                <td class="text-xs-right">
+                  <v-btn fab dark  small color="red" @click="removeMaterial(props.item.materialName)">
+                    <v-icon dark>remove</v-icon>
+                  </v-btn>                  
+                </td>
+              </template>
+            </v-data-table>
+          </v-card>
+        </v-flex>
+      </v-layout>             
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Continuar</v-btn>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 1">Voltar</v-btn>
+          <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+        </v-stepper-content>
+        <v-stepper-content step="3">
+          <v-card color="secondary" class="mb-5" height="200px">
+              <v-list>
+                <v-list-tile v-for="item in recipes" v-bind:key="recipe.materialName">
+                  <v-list-tile-action>
+                    <v-icon v-if="item.icon" color="green">star</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title v-text="item.materialName"></v-list-tile-title>
+                  </v-list-tile-content>                  
+                  <v-list-tile-content>
+                    <v-list-tile-title v-text="item.quantity"></v-list-tile-title>
+                  </v-list-tile-content>
+                  <v-list-tile-content>
+                    <v-list-tile-title v-text="item.unit"></v-list-tile-title>
+                  </v-list-tile-content>                  
+                </v-list-tile>
+              </v-list>
+          </v-card>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Salvar Receita</v-btn>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
+          <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+        </v-stepper-content>
+      </v-stepper-items>
+    </v-stepper>
+                       
         </v-card>
       </v-dialog>       
 </template>
@@ -94,8 +168,11 @@ export default {
   props: ['showRecipeRegister'],
   data () {
     return {
+      e1: 0,
+      items:[],     
       recipe:{
         name:'',
+        description:'',
         materials:[]
       },
       headers: [
@@ -103,9 +180,13 @@ export default {
           text: 'Nome do Material',
           value: 'name'
         },
-        { text: 'Quantididade', value: 'quantity' }
+        { text: 'Quantidade', value: 'quantity' },
+        { text: 'Unidade de Medida', value: 'unit' },
+        { text: 'Excluir', value: 'delete',align: 'right', }
       ],      
       selectedMaterial:{},
+      selectedCategory:{},
+      categories:[],
       recipes:[],
       materials:[],
       valid:true,          
@@ -114,6 +195,14 @@ export default {
     }
   },
   watch: {
+      selectedCategory: function(category){
+        this.materials = _.filter(this.materials,function(material){ 
+          return material.category.id == category.id;
+        });       
+      },    
+      selectedMaterial: function(material){
+        this.items = material.unities;
+      },
       showRecipeRegister: function(show){
           this.showModal = show;
       },
@@ -129,17 +218,30 @@ export default {
         if (this.$refs.form.validate()) {
           this.recipes.push({
             materialName: this.selectedMaterial.name,
-            quantity: this.recipe.quantity
+            quantity: this.recipe.quantity,
+            unit: this.recipe.unit
           });
           this.clearForm();
         }
+      },
+      getCategories(){
+        this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
+      },
+      getMaterials(){
+        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      },
+      removeMaterial(material){
+
+      },
+      saveRecipe(){
+        this.$parent.$emit('recipeObject', _.clone(this.recipes));
       },
       clearForm(){
         this.$refs.form.reset();
       }
   },
   mounted () {
-    this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+    this.getCategories();
   }
 }
 </script>
