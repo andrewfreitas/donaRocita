@@ -10,6 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "convert-units": "^2.3.4",
     "guid": "0.0.12",
     "lodash": "^4.17.4",
     "vue": "^2.5.2",

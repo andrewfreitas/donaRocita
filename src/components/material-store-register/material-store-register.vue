@@ -35,10 +35,9 @@
                     required
                   ></v-select>
             </v-flex>                      
-            <v-flex xs12 sm2>
+            <v-flex xs12 sm5>
               <v-text-field
-                label="Quantidade"
-                :rules="quantityMaterialRules"
+                label="Quantidade Embalagem"
                 v-model="material.quantity"
                 ref="material.quantity"
                 counter="5"
@@ -46,37 +45,35 @@
               ></v-text-field>
             </v-flex>
             <v-spacer></v-spacer>
-            <v-flex xs12 sm2>
+            <v-flex xs12 sm5>
               <v-text-field
                 label="Quantidade Unitária"
-                :rules="quantityMaterialRules"
-                v-model="material.quantity"
-                ref="material.quantity"
+                v-model="material.unitWeight"
+                ref="material.unitWeight"
                 counter="5"
                 required
               ></v-text-field>
-            </v-flex>
-            <v-spacer></v-spacer>            
-            <v-flex xs12 sm3>
+            </v-flex>            
+            <v-flex xs12 sm5>
                 <v-select
                     label="Unid. Medida"
                     placeholder="Selecione"
-                    :items.sync="items"
-                    v-model="recipe.unit"
-                    ref="recipe.unit"
+                    :items.sync="selectedMaterial.unities"
+                    item-text="description"
+                    v-model="material.unit"
+                    ref="material.unit"
                     persistent-hint
                     required
                 ></v-select>
             </v-flex>
             <v-spacer></v-spacer>                       
-            <v-flex xs12 sm2>
+            <v-flex xs12 sm5>
               <v-text-field
-                label="Preço"
+                label="Preço Total"
                 required
                 prefix="R$"
                 mask="#.###,##"
                 placeholder="00,00"
-                :rules="priceMaterialRules"
                 v-model="material.price"
                 ref="material.price"
               ></v-text-field>
@@ -89,7 +86,7 @@
             <v-btn dark small @click="showModal = false" color="orange darken-4">
               <v-icon dark>replay</v-icon>
               Fechar</v-btn>
-            <v-btn dark small @click="saveMaterial()" color="orange darken-4" :disabled="!valid">
+            <v-btn dark small @click="saveMaterialStore()" color="orange darken-4" :disabled="!valid">
               <v-icon dark>done</v-icon>
               Salvar
               </v-btn>
@@ -122,46 +119,15 @@ export default {
         price:'',
       },
       selectedMaterial:{},
+      materialStore:[],
       recipe:{},
       selectedCategory:{},
       materials:[],
-      items: [
-        'Gramas(Gr)',
-        'Miligramas(Mg)',
-        'Quilogramas(Kg)',
-        'Litros(Lt)',
-        'Mililitros(Ml)',
-      ],  
+      unities:[],
       valid:true,
       categories:[],
-      nameMaterialRules: [
-        (v) => !! this.material.name || 'Campo obrigatório',
-        (v) => !Number(this.material.name) || 'Nome inválido',
-        (v) => v.length <= 30 || 'Máximo de 30 caracteres'
-      ],
-      descriptionMaterialRules: [
-        (v) => !! this.material.description || 'Campo obrigatório',
-        (v) => !Number(this.material.description) || 'Descrição inválida',
-        (v) => v.length <= 50 || 'Máximo de 50 caracteres'
-      ],
-      unitMaterialRules:[
-        (v) => v.length > 0 || 'Campo obrigatório'
-      ],
-      priceMaterialRules:[
-        (v) => v.length > 0 || 'Campo obrigatório'
-      ],
-      quantityMaterialRules:[
-        (v) => this.material.quantity.length > 0 || 'Campo obrigatório'
-      ],               
       showModal: false,
-      select: null,
-      items: [
-        'Gramas(Gr)',
-        'Miligramas(Mg)',
-        'Quilogramas(Kg)',
-        'Litros(Lt)',
-        'Mililitros(Ml)',
-      ],      
+      select: null      
     }
   },
   watch: {
@@ -172,6 +138,9 @@ export default {
       },         
       showMaterialRegister: function(show){
           this.showModal = show;
+      },
+      selectedMaterial:function(selectedMaterial){
+        this.unities
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
@@ -184,14 +153,24 @@ export default {
       actvModal(showModal){
           this.showModal = showModal;
       },
-      saveMaterial(){
+      saveMaterialStore(){
         if (this.$refs.form.validate()) {
-          var guid = _guid.create();
-          this.material.id =guid;
+          this.materialStore.push({
+            materialId: this.selectedMaterial.id,
+            categoryId: this.selectedCategory.id,
+            totalQuantity: this.material.quantity,
+            unitWeight: this.material.unitWeight,
+            unit:this.material.unit,
+            totalPrice: this.material.price
+          });
+          this.$localStorage.set('materialStore', JSON.stringify(this.materialStore));
           this.$parent.$emit('materialObject', _.clone(this.material));
           this.clearForm();
           this.showModal = false;
         }
+      },
+      unitConversion(){
+
       },
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;

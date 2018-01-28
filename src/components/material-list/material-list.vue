@@ -32,12 +32,10 @@
       <td class="text-xs-right">{{ props.item.name }}</td>
       <td class="text-xs-right">{{ props.item.description }}</td>
       <td class="text-xs-right">{{ props.item.category.name }}</td>
-      <td class="text-xs-right">{{ props.item.quantity }}</td>
       <td class="text-xs-right">
-        <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.name">{{ item }}</v-chip>
+        <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
       </td>
-      <td class="text-xs-right">{{ props.item.price }}</td>
-    </template>
+      </template>
   </v-data-table>
       </v-card>
     </v-flex>
@@ -63,9 +61,7 @@ data () {
           },
           { text: 'Descrição do Material', value: 'description' },
           { text: 'Categoria', value: 'category' },
-          { text: 'Quantidade', value: 'quantity' },
-          { text: 'Unid. Medida', value: 'unit' },
-          { text: 'Preço', value: 'price' }
+          { text: 'Unid. Medida', value: 'unit' }
         ],
         materials:[],
         items: [

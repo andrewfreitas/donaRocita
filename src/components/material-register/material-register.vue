@@ -48,6 +48,7 @@
                     label="Unidades de Medida permitidas para este Material"
                     placeholder="Selecione"
                     :items="items"
+                    item-text="description"
                     chips
                     tags
                     v-model="material.unities"
@@ -55,28 +56,6 @@
                     persistent-hint
                     required
                   ></v-select>
-            </v-flex>                       
-            <v-flex xs12 sm4>
-              <v-text-field
-                label="Quantidade"
-                :rules="quantityMaterialRules"
-                v-model="material.quantity"
-                ref="material.quantity"
-                counter="5"
-                required
-              ></v-text-field>
-            </v-flex>           
-            <v-flex xs12 sm4>
-              <v-text-field
-                label="Preço"
-                required
-                prefix="R$"
-                mask="#.###,##"
-                placeholder="00,00"
-                :rules="priceMaterialRules"
-                v-model="material.price"
-                ref="material.price"
-              ></v-text-field>
             </v-flex>
             </v-layout>
           </v-card-text>
@@ -115,8 +94,7 @@ export default {
         category:'',
         description:'',
         quantity:'',
-        unities:'',
-        price:'',
+        unities:''
       },
       valid:true,
       categories:[],
@@ -132,22 +110,34 @@ export default {
       ],
       unitMaterialRules:[
         (v) => v.length > 0 || 'Campo obrigatório'
-      ],
-      priceMaterialRules:[
-        (v) => v.length > 0 || 'Campo obrigatório'
-      ],
-      quantityMaterialRules:[
-        (v) => this.material.quantity.length > 0 || 'Campo obrigatório'
       ],               
       showModal: false,
       select: null,
-      items: [
-        'Gramas(Gr)',
-        'Miligramas(Mg)',
-        'Quilogramas(Kg)',
-        'Litros(Lt)',
-        'Mililitros(Ml)',
-      ],      
+      items: [{
+        description:'Gramas',
+        type:'gr',
+        unit:1000.0
+      },
+      {
+        description:'Miligramas',
+        type:'mg',
+        unit:1000.0
+      },
+      {
+        description:'Quilogramas',
+        type:'kg',
+        unit:1000.0
+      },
+      {
+        description:'Litros',
+        type:'l',
+        unit:1000.0
+      },
+      {
+        description:'Mililitros',
+        type:'ml',
+        unit:1000.0
+      }],      
     }
   },
   watch: {

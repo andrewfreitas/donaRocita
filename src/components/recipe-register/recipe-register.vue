@@ -87,6 +87,7 @@
                     placeholder="Selecione"
                     :items.sync="items"
                     v-model="recipe.unit"
+                    item-text="description"
                     ref="recipe.unit"
                     persistent-hint
                     required
@@ -112,9 +113,9 @@
                 rows-per-page-text = "Itens por página"
               >
               <template slot="items" slot-scope="props"> 
-                <td class="text-xs-right">{{ props.item.materialName }}</td>
+                <td class="text-xs-right">{{ props.item.material.name }}</td>
                 <td class="text-xs-right">{{ props.item.quantity }}</td>
-                <td class="text-xs-right">{{ props.item.unit }}</td>
+                <td class="text-xs-right">{{ props.item.unit.description }}</td>
                 <td class="text-xs-right">
                   <v-btn fab dark  small color="red" @click="removeMaterial(props.item.recipeItemId)">
                     <v-icon dark>remove</v-icon>
@@ -163,10 +164,12 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import conversionEngine from '@/components/conversion-engine/conversion-engine';
 
 export default {
   name: 'recipeRegister',
   props: ['showRecipeRegister'],
+  mixins:[conversionEngine],
   data () {
     return {
       e1: 0,
@@ -217,13 +220,15 @@ export default {
       },
       addRecipe(){
         if (this.$refs.form.validate()) {
-          var guid = _guid.create();        
-          this.recipes.push({
+          var guid = _guid.create();
+          var recipeItem = {
             recipeItemId:guid.value,
-            materialName: this.selectedMaterial.name,
+            material: this.selectedMaterial,
             quantity: this.recipe.quantity,
             unit: this.recipe.unit
-          });
+          };
+          this.convertNumber(recipeItem);
+          this.recipes.push(recipeItem);
           this.clearForm();
         }
       },
