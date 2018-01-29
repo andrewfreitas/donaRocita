@@ -19,7 +19,7 @@
                     :items="categories"
                     item-text="name"
                     v-model="selectedCategory"
-                    ref="recipe.categories"
+                    ref="selectedCategory"
                     required
                     @change="getMaterials()"
                   ></v-select>
@@ -31,15 +31,15 @@
                     :items="materials"
                     item-text="name"
                     v-model="selectedMaterial"
-                    ref="recipe.materials"
+                    ref="selectedMaterial"
                     required
                   ></v-select>
             </v-flex>                      
             <v-flex xs12 sm5>
               <v-text-field
                 label="Quantidade Embalagem"
-                v-model="material.quantity"
-                ref="material.quantity"
+                v-model="material.unitWeight"
+                ref="material.unitWeight"
                 counter="5"
                 required
               ></v-text-field>
@@ -48,12 +48,12 @@
             <v-flex xs12 sm5>
               <v-text-field
                 label="Quantidade Unitária"
-                v-model="material.unitWeight"
-                ref="material.unitWeight"
+                v-model="material.quantity"
+                ref="material.quantity"
                 counter="5"
                 required
               ></v-text-field>
-            </v-flex>            
+            </v-flex>           
             <v-flex xs12 sm5>
                 <v-select
                     label="Unid. Medida"
@@ -69,14 +69,14 @@
             <v-spacer></v-spacer>                       
             <v-flex xs12 sm5>
               <v-text-field
-                label="Preço Total"
+                label="Preço"
                 required
                 prefix="R$"
-                mask="#.###,##"
-                placeholder="00,00"
                 v-model="material.price"
                 ref="material.price"
-              ></v-text-field>
+              >
+              </v-text-field>
+              <money style="display:none" v-model="material.price" v-bind="money"></money>             
             </v-flex>
             </v-layout>
           </v-card-text>
@@ -103,12 +103,20 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import {VMoney} from 'v-money';
 
 export default {
   name: 'MaterialStoreRegister',
   props: ['showMaterialRegister'],
   data () {
     return {
+      price: 123.45,
+      money: {
+        decimal: ',',
+        thousands: '.',
+        precision: 2,
+        masked: true /* doesn't work with directive */
+      },      
       material:{
         id:'',
         name:'',
@@ -118,16 +126,15 @@ export default {
         unities:'',
         price:'',
       },
-      selectedMaterial:{},
       materialStore:[],
+      selectedMaterial:{},
       recipe:{},
       selectedCategory:{},
-      materials:[],
-      unities:[],
+      materials:[], 
       valid:true,
-      categories:[],
+      categories:[],            
       showModal: false,
-      select: null      
+      select: null   
     }
   },
   watch: {
@@ -164,13 +171,8 @@ export default {
             totalPrice: this.material.price
           });
           this.$localStorage.set('materialStore', JSON.stringify(this.materialStore));
-          this.$parent.$emit('materialObject', _.clone(this.material));
           this.clearForm();
-          this.showModal = false;
         }
-      },
-      unitConversion(){
-
       },
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
@@ -180,6 +182,7 @@ export default {
       },
       clearForm(){
         this.$refs.form.reset();
+        this.showModal = false;
       }
   }
 }

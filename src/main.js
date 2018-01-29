@@ -6,9 +6,11 @@ import router from './router'
 import Vuetify from 'vuetify'
 import('../node_modules/vuetify/dist/vuetify.min.css') // Ensure you are using css-loader
 import VueLocalStorage from 'vue-localstorage'
+import money from 'v-money'
 
 Vue.use(VueLocalStorage);
 Vue.use(Vuetify);
+Vue.use(money, {precision: 4});
 
 
 Vue.config.productionTip = false

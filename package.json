@@ -13,6 +13,8 @@
     "convert-units": "^2.3.4",
     "guid": "0.0.12",
     "lodash": "^4.17.4",
+    "money": "^0.2.0",
+    "v-money": "^0.8.1",
     "vue": "^2.5.2",
     "vue-localstorage": "^0.6.1",
     "vue-router": "^3.0.1",
