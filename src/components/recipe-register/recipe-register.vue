@@ -51,8 +51,8 @@
                     placeholder="Selecione"
                     :items="categories"
                     item-text="name"
-                    v-model="selectedCategory"
-                    ref="recipe.categories"
+                    v-model="recipeItem.category"
+                    ref="recipeItem.category"
                     required
                     @change="getMaterials()"
                   ></v-select>
@@ -64,8 +64,8 @@
                     placeholder="Selecione"
                     :items="materials"
                     item-text="name"
-                    v-model="selectedMaterial"
-                    ref="recipe.materials"
+                    v-model="recipeItem.material"
+                    ref="recipeItem.material"
                     required
                   ></v-select>
                 </v-flex>    
@@ -74,8 +74,8 @@
                   <v-text-field
                     label="Quantidade"
                     placeholder="0"
-                    v-model="recipe.quantity"
-                    ref="recipe.quantity"
+                    v-model="recipeItem.quantity"
+                    ref="recipeItem.quantity"
                     counter="5"
                     required
                   ></v-text-field>
@@ -86,9 +86,9 @@
                     label="Unid. Medida"
                     placeholder="Selecione"
                     :items.sync="items"
-                    v-model="recipe.unit"
+                    v-model="recipeItem.unit"
                     item-text="description"
-                    ref="recipe.unit"
+                    ref="recipeItem.unit"
                     persistent-hint
                     required
                   ></v-select>
@@ -111,13 +111,15 @@
                 :items="recipes"
                 class="elevation-1"
                 rows-per-page-text = "Itens por página"
+                no-data-text = "Nenhum material adicionado foi adicionado a receita."
               >
               <template slot="items" slot-scope="props"> 
                 <td class="text-xs-right">{{ props.item.material.name }}</td>
                 <td class="text-xs-right">{{ props.item.quantity }}</td>
                 <td class="text-xs-right">{{ props.item.unit.description }}</td>
+                <td class="text-xs-right">{{ props.item.cost }}</td>
                 <td class="text-xs-right">
-                  <v-btn fab dark  small color="red" @click="removeMaterial(props.item.recipeItemId)">
+                  <v-btn fab dark  small color="red" @click="removeMaterial(props.item.id)">
                     <v-icon dark>remove</v-icon>
                   </v-btn>                  
                 </td>
@@ -132,22 +134,38 @@
         </v-stepper-content>
         <v-stepper-content step="3">
           <v-card color="secondary" class="mb-5" height="200px">
-              <v-list>
-                <v-list-tile v-for="item in recipes" v-bind:key="recipe.materialName">
-                  <v-list-tile-action>
-                    <v-icon v-if="item.icon" color="green">star</v-icon>
-                  </v-list-tile-action>
-                  <v-list-tile-content>
-                    <v-list-tile-title v-text="item.materialName"></v-list-tile-title>
-                  </v-list-tile-content>                  
-                  <v-list-tile-content>
-                    <v-list-tile-title v-text="item.quantity"></v-list-tile-title>
-                  </v-list-tile-content>
-                  <v-list-tile-content>
-                    <v-list-tile-title v-text="item.unit"></v-list-tile-title>
-                  </v-list-tile-content>                  
-                </v-list-tile>
-              </v-list>
+            <v-data-table
+                v-bind:headers="summaryHeaders"
+                :items="recipes"
+                no-data-text = "Nenhum material adicionado foi adicionado a receita."
+                hide-actions
+                class="elevation-1">
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    {{ props.header.text }}
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>              
+              <template slot="items" slot-scope="props"> 
+                <td class="text-xs-right">{{ props.item.material.name }}</td>
+                <td class="text-xs-right">{{ props.item.quantity }}</td>
+                <td class="text-xs-right">{{ props.item.unit.description }}</td>
+                <td class="text-xs-right">{{ props.item.cost }}</td>
+              </template>
+              <template slot="footer">              
+                <td colspan="3" class="text-xs-right">
+                  <strong>Valor de custo desta receita:</strong>
+                </td>
+                <td class="text-xs-right">
+                  <strong>{{summaryCost}}</strong>
+                  <v-spacer></v-spacer>
+                </td>                
+              </template>              
+            </v-data-table>
           </v-card>
           <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Salvar Receita</v-btn>
           <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
@@ -165,6 +183,7 @@
 import _ from 'lodash';
 import _guid from 'Guid';
 import conversionEngine from '@/components/conversion-engine/conversion-engine';
+import numeral from 'numeral';
 
 export default {
   name: 'recipeRegister',
@@ -173,7 +192,8 @@ export default {
   data () {
     return {
       e1: 0,
-      items:[],     
+      items:[],
+      recipeItem:{},     
       recipe:{
         name:'',
         description:'',
@@ -186,16 +206,37 @@ export default {
         },
         { text: 'Quantidade', value: 'quantity' },
         { text: 'Unidade de Medida', value: 'unit' },
+        { text: 'Vlr Custo', value: 'cost' },
         { text: 'Excluir', value: 'delete',align: 'right', }
-      ],      
+      ],
+      summaryHeaders: [
+        {
+          text: 'Nome do Material',
+          value: 'name'
+        },
+        { text: 'Quantidade', value: 'quantity' },
+        { text: 'Unidade de Medida', value: 'unit' },
+        { text: 'Vlr Custo', value: 'cost' }
+      ],              
       selectedMaterial:{},
       selectedCategory:{},
       categories:[],
       recipes:[],
       materials:[],
       valid:true,          
-      showModal: false,
-      select: null,      
+      showModal: false     
+    }
+  },
+  computed: {
+    summaryCost: function(){
+      
+      var totalCost = 0;
+
+      _.forEach(this.recipes, function(item){
+        totalCost += numeral(item.cost)._value;
+      });
+
+      return numeral(totalCost).format('$ 0,0.00');
     }
   },
   watch: {
@@ -204,8 +245,8 @@ export default {
           return material.category.id == category.id;
         });       
       },    
-      selectedMaterial: function(material){
-        this.items = material.unities;
+      'recipeItem.material': function(material){
+        this.items = material.unities || null;
       },
       showRecipeRegister: function(show){
           this.showModal = show;
@@ -221,14 +262,9 @@ export default {
       addRecipe(){
         if (this.$refs.form.validate()) {
           var guid = _guid.create();
-          var recipeItem = {
-            recipeItemId:guid.value,
-            material: this.selectedMaterial,
-            quantity: this.recipe.quantity,
-            unit: this.recipe.unit
-          };
-          this.convertNumber(recipeItem);
-          this.recipes.push(recipeItem);
+          this.recipeItem.id = guid.value;
+          this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem)).format('$ 0,0.00');           
+          this.recipes.push(_.clone(this.recipeItem));
           this.clearForm();
         }
       },
@@ -238,9 +274,9 @@ export default {
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
       },
-      removeMaterial(itemId){
-        this.recipes = _.remove(this.recipes, function(recipeItem) {
-          return recipeItem.recipeItemId != itemId;
+      removeMaterial(recipeItemId){
+        this.recipes = _.remove(this.recipes, function(item) {
+          return item.id != recipeItemId;
         })
       },
       saveRecipe(){
@@ -252,6 +288,27 @@ export default {
   },
   mounted () {
     this.getCategories();
+  },
+  beforeCreate () {
+    numeral.register('locale', 'pt-BR', {
+        delimiters: {
+            thousands: '.',
+            decimal: ','
+        },
+        abbreviations: {
+            thousand: 'mil',
+            million: 'milhões',
+            billion: 'b',
+            trillion: 't'
+        },
+        ordinal: function (number) {
+            return 'º';
+        },
+        currency: {
+            symbol: 'R$'
+        }
+    });
+    numeral.locale('pt-BR');
   }
 }
 </script>
