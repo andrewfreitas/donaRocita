@@ -26,6 +26,17 @@
                 counter="30"
               ></v-text-field>
             <v-flex xs12>
+                  <v-select
+                    label="Categoria da Receita"
+                    placeholder="Selecione"
+                    :items="recipeCategories"
+                    item-text="name"
+                    v-model="recipeItem.recipeCategory"
+                    ref="recipeItem.recipeCategory"
+                    required
+                  ></v-select>
+            </v-flex>               
+            <v-flex xs12>
               <v-text-field dark
                 label="Descrição da Receita"              
                 v-model="recipe.description"
@@ -108,10 +119,10 @@
           <v-card>
             <v-data-table
                 v-bind:headers="headers"
-                :items="recipes"
+                :items="recipe.items"
                 class="elevation-1"
                 rows-per-page-text = "Itens por página"
-                no-data-text = "Nenhum material adicionado foi adicionado a receita."
+                no-data-text = "Nenhum material foi adicionado a receita."
               >
               <template slot="items" slot-scope="props"> 
                 <td class="text-xs-right">{{ props.item.material.name }}</td>
@@ -136,8 +147,8 @@
           <v-card color="secondary" class="mb-5" height="200px">
             <v-data-table
                 v-bind:headers="summaryHeaders"
-                :items="recipes"
-                no-data-text = "Nenhum material adicionado foi adicionado a receita."
+                :items="recipe.items"
+                no-data-text = "Nenhum material foi adicionado a receita."
                 hide-actions
                 class="elevation-1">
               <template slot="headerCell" slot-scope="props">
@@ -167,7 +178,7 @@
               </template>              
             </v-data-table>
           </v-card>
-          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Salvar Receita</v-btn>
+          <v-btn color="deep-orange darken-3" @click.stop="saveRecipe()">Salvar Receita</v-btn>
           <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
           <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
         </v-stepper-content>
@@ -193,11 +204,12 @@ export default {
     return {
       e1: 0,
       items:[],
+      recipeCategories:[],
       recipeItem:{},     
       recipe:{
         name:'',
         description:'',
-        materials:[]
+        items:[]
       },
       headers: [
         {
@@ -220,8 +232,8 @@ export default {
       ],              
       selectedMaterial:{},
       selectedCategory:{},
-      categories:[],
       recipes:[],
+      categories:[],
       materials:[],
       valid:true,          
       showModal: false     
@@ -232,7 +244,7 @@ export default {
       
       var totalCost = 0;
 
-      _.forEach(this.recipes, function(item){
+      _.forEach(this.recipe.items, function(item){
         totalCost += numeral(item.cost)._value;
       });
 
@@ -252,7 +264,7 @@ export default {
           this.showModal = show;
       },
       showModal:function(showModal){
-          this.$parent.$emit('showModal', showModal);
+          this.$parent.$emit('showModal', showModal,'showRecipeRegister');
       }
   },
   methods: {
@@ -263,24 +275,31 @@ export default {
         if (this.$refs.form.validate()) {
           var guid = _guid.create();
           this.recipeItem.id = guid.value;
-          this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem)).format('$ 0,0.00');           
-          this.recipes.push(_.clone(this.recipeItem));
+          this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem)).format('$ 0,0.00');
+          this.recipe.items.push(_.clone(this.recipeItem));           
           this.clearForm();
         }
       },
       getCategories(){
         this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
       },
+      getRecipeCategories(){
+        this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
+      },      
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
       },
       removeMaterial(recipeItemId){
-        this.recipes = _.remove(this.recipes, function(item) {
+        this.recipe.items = _.remove(this.recipe.items, function(item) {
           return item.id != recipeItemId;
         })
       },
       saveRecipe(){
-        this.$parent.$emit('recipeObject', _.clone(this.recipes));
+        this.recipes.push(_.clone(this.recipe));
+        this.$localStorage.set('recipes', JSON.stringify(this.recipes));
+        this.$parent.$emit('recipeObject', _.clone(this.recipe));
+        this.showModal = false;
+        this.clearForm();
       },
       clearForm(){
         this.$refs.form.reset();
@@ -288,6 +307,7 @@ export default {
   },
   mounted () {
     this.getCategories();
+    this.getRecipeCategories();
   },
   beforeCreate () {
     numeral.register('locale', 'pt-BR', {

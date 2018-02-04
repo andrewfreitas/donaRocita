@@ -1,7 +1,7 @@
 <template>
       <v-dialog v-model="showModal" persistent  max-width="500px">
         <v-card>
-            <v-toolbar color="grey darken-2" dark>
+            <v-toolbar color="amber darken-4" dark>
               <v-icon dark>assignment</v-icon>
             <v-toolbar-title class="white--text">Inclusão de Materiais</v-toolbar-title>
             </v-toolbar>

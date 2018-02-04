@@ -6,24 +6,28 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
-        <v-toolbar color="grey" dark>
-          <v-toolbar-title>Dona Rosita</v-toolbar-title>
+        <v-toolbar color="deep-orange darken-5" dark>
+          <v-toolbar-title>Dona Rocita</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
         <v-list two-line>
-            <v-btn  dark large color="indigo" href="#/category-list" router>
+            <v-btn  dark color="amber darken-4" href="#/category-list" router>
               <v-icon dark>web</v-icon>
                 Categorias
             </v-btn>          
-            <v-btn  dark large color="orange darken-2" href="#/material-list" router>
+            <v-btn  dark color="amber darken-4" href="#/material-list" router>
                 <v-icon dark>assignment</v-icon>
                 Materiais
             </v-btn>
-            <v-btn  dark large color="cyan accent-4" href="#/material-store-list" router>
+            <v-btn  dark color="amber darken-4" href="#/material-store-list" router>
               <v-icon dark>dns</v-icon>
                 Estoque
-            </v-btn>             
-            <v-btn  dark large color="deep-orange darken-3" href="#/recipe-list" router>
+            </v-btn>
+            <v-btn  dark color="amber darken-4" href="#/recipe-category-list" router>
+              <v-icon dark>grain</v-icon>
+                Categoria Receita
+            </v-btn>                               
+            <v-btn  dark color="amber darken-4" href="#/recipe-list" router>
               <v-icon dark>gesture</v-icon>
                 Receitas
             </v-btn>                                    

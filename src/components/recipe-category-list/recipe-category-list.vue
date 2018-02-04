@@ -18,65 +18,66 @@
       ></v-text-field>
       <v-spacer></v-spacer>
             <v-btn dark small color="amber darken-4" @click="openModal()">
-                <v-icon dark>web</v-icon>
-                Estoque de Materiais
+                <v-icon dark>grain</v-icon>
+                Inclusão de Categoria da Receita
             </v-btn>          
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
-      :items="categories"
+      :items="recipeCategories"
       v-bind:search="search"
       class="elevation-1"
     >
     <template slot="items" slot-scope="props">
       <td class="text-xs-right">{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.description }}</td>
     </template>
   </v-data-table>
       </v-card>
     </v-flex>
   </v-layout>
-  <material-store-register :show-material-register.sync="showMaterialStoreRegister"></material-store-register> 
+  <recipe-category-register :show-recipe-category-register.sync="showRecipeCategoryRegister"></recipe-category-register> 
 </div>
 </template>
 <script>
-import materialStoreRegister from '@/components/material-store-register/material-store-register';
+
+import recipeCategoryRegister from '@/components/recipe-category-register/recipe-category-register';
 
 export default {
-  name: 'MaterialStoreList',
+  name: 'recipeCategoryList',
   components: {
-      materialStoreRegister
+      recipeCategoryRegister
   },
 data () {
       return {
-          showMaterialStoreRegister: false,
+          showRecipeCategoryRegister: false,
           search: '',
         headers: [
           {
-            text: 'Nome do Material',
+            text: 'Nome do Categoria',
             value: 'name'
-          },
-          { text: 'Descrição do Material', value: 'description' }
+          }
         ],
-        categories:[]
+        recipeCategories:[]
       }
 },
   methods: {
       openModal(){
-          this.showMaterialStoreRegister = true;
+          this.showRecipeCategoryRegister = true;
+      },
+      getRecipeCategories(){
+          this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
       }
   },
     mounted () {
       this.$on('showModal',function (show) {
-          this.showMaterialStoreRegister = show;
+          this.showRecipeCategoryRegister = show;
       }); 
 
       this.$on('categoryObject',function (categoryObject) {
-          this.categories.push(categoryObject);
-          this.$localStorage.set('categories', JSON.stringify(this.categories));
+            this.getRecipeCategories();
       });
       
-      this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
+      this.getRecipeCategories();
   },  
 }
 </script>

@@ -14,7 +14,7 @@ export default {
     convertNumber(item){
       
       return this.getMaterialStorage(item);
-    },
+    },     
     getMaterialStorage(item){
       this.materialStorage = JSON.parse(this.$localStorage.get('materialStore'))[0];
       var totalQuantity = this.materialStorage.totalQuantity * this.materialStorage.unitWeight;

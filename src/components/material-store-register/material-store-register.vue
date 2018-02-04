@@ -1,7 +1,7 @@
 <template>
       <v-dialog v-model="showModal" persistent  max-width="500px">
         <v-card>
-            <v-toolbar color="grey darken-2" dark>
+            <v-toolbar color="deep-orange darken-3" dark>
               <v-icon dark>assignment</v-icon>
             <v-toolbar-title class="white--text">Estoque de Materiais</v-toolbar-title>
             </v-toolbar>
@@ -83,10 +83,10 @@
           <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn dark small @click="showModal = false" color="orange darken-4">
+            <v-btn dark small @click="showModal = false" color="deep-orange darken-3">
               <v-icon dark>replay</v-icon>
               Fechar</v-btn>
-            <v-btn dark small @click="saveMaterialStore()" color="orange darken-4" :disabled="!valid">
+            <v-btn dark small @click="saveMaterialStore()" color="deep-orange darken-3" :disabled="!valid">
               <v-icon dark>done</v-icon>
               Salvar
               </v-btn>

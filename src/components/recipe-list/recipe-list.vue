@@ -17,10 +17,14 @@
         v-model="search"
       ></v-text-field>
       <v-spacer></v-spacer>
-            <v-btn dark small color="amber darken-4" @click="openModal()">
+            <v-btn dark small color="amber darken-4" @click="openModal('showRecipeRegister')">
                 <v-icon dark>gesture</v-icon>
                 Inclusão de Receitas
-            </v-btn>          
+            </v-btn>
+            <v-btn dark small color="amber darken-4" @click="openModal('showRecipePrint')">
+                <v-icon dark>weekend</v-icon>
+                Imprimir Receitas
+            </v-btn>                           
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
@@ -40,19 +44,24 @@
       </v-card>
     </v-flex>
   </v-layout>
-  <recipe-register :show-recipe-register.sync="showRecipeRegister"></recipe-register> 
+  <recipe-register :show-recipe-register.sync="showRecipeRegister"></recipe-register>
+  <recipe-print :show-recipe-print.sync="showRecipePrint"></recipe-print> 
 </div>
 </template>
 <script>
 import recipeRegister from '@/components/recipe-register/recipe-register';
+import recipePrint from '@/components/recipe-print/recipe-print';
+
 export default {
   name: 'RecipeList',
   components: {
-      recipeRegister
+      recipeRegister,
+      recipePrint
   },
 data () {
       return {
           showRecipeRegister: false,
+          showRecipePrint:false,
           search: '',
         headers: [
           {
@@ -64,45 +73,27 @@ data () {
             value: 'description'
           }          
         ],
-        recipes:[],
-        items: [
-          {
-            value: false,
-            name: 'Frozen Yogurt',
-            calories: 159,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0
-          },
-          {
-            value: false,
-            name: 'Ice cream sandwich',
-            calories: 237,
-            fat: 9.0,
-            carbs: 37,
-            protein: 4.3
-          }
-
-
-        ]
+        recipes:[]
       }
 },
   methods: {
-      openModal(){
-          this.showRecipeRegister = true;
+      openModal(modalItem){
+        this[modalItem] = true;
+      },
+      getRecipes(){
+        this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
       }
   },
     mounted () {
-      this.$on('showModal',function (show) {
-          this.showRecipeRegister = show;
+      this.$on('showModal',function (show,modalName) {
+          this[modalName] = show;
       }); 
 
       this.$on('recipeObject',function (recipeObject) {
-          this.recipes.push(recipeObject);
-           this.$localStorage.set('recipes', JSON.stringify(this.recipeObject));
+          this.getRecipes();
       });
       
-      this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
+      this.getRecipes();
   },  
 }
 </script>

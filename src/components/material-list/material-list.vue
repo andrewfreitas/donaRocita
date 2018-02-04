@@ -6,8 +6,8 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
-        <v-toolbar color="grey" dark>
-          <v-toolbar-title>Dona Rosita</v-toolbar-title>
+        <v-toolbar color="deep-orange darken-3" dark>
+          <v-toolbar-title>Dona Rocita</v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -17,7 +17,7 @@
         v-model="search"
       ></v-text-field>
       <v-spacer></v-spacer>
-            <v-btn dark small color="orange darken-4" @click="openModal()">
+            <v-btn dark small color="amber darken-4" @click="openModal()">
                 <v-icon dark>assignment</v-icon>
                 Inclusão de Materiais
             </v-btn>          
