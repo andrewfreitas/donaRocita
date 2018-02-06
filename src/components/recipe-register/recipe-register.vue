@@ -12,7 +12,9 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="e1 > 2">Itens da Receita</v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="3">Salvar a Receita</v-stepper-step>
+        <v-stepper-step step="3" :complete="e1 > 3">Itens da Receita</v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step step="4">Salvar a Receita</v-stepper-step>
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="1">
@@ -178,10 +180,58 @@
               </template>              
             </v-data-table>
           </v-card>
-          <v-btn color="deep-orange darken-3" @click.stop="saveRecipe()">Salvar Receita</v-btn>
-          <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
+          <v-btn color="deep-orange darken-3" @click.stop="e1 = 4">Continuar</v-btn>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Voltar</v-btn>
           <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
         </v-stepper-content>
+        <v-stepper-content step="4">
+          <v-card color="secondary" class="mb-5" height="200px">
+            <v-card-text>
+            <v-layout row wrap>
+              <v-flex xs12 sm5>
+                <v-radio-group v-model="ex8" :mandatory="false" row>
+                  <v-radio label="Valor" value="radio-1" color="green"></v-radio>
+                  <v-radio label="Percentual" value="radio-2" color="green"></v-radio>
+                </v-radio-group>
+              </v-flex>
+              <v-flex xs12 sm5>
+                <v-text-field
+                  label="Preço"
+                  required
+                  prefix="R$"
+                  v-model="recipe.price"
+                  ref="recipe.price">
+                </v-text-field>
+                <money style="display:none" v-model="recipe.price" v-bind="money"></money>             
+              </v-flex>              
+              <v-flex xs12 sm5>
+                <v-text-field dark
+                  label="Nome da Receita"
+                  v-model="recipe.name"
+                  required
+                  ref="recipe.name"
+                  counter="30"
+                ></v-text-field>
+              </v-flex>
+              <v-spacer></v-spacer>
+              <v-flex xs12 sm5>
+                    <v-select
+                      label="Categoria da Receita"
+                      placeholder="Selecione"
+                      :items="recipeCategories"
+                      item-text="name"
+                      v-model="recipeItem.recipeCategory"
+                      ref="recipeItem.recipeCategory"
+                      required
+                    ></v-select>
+              </v-flex>
+            </v-layout>               
+            </v-card-text>                    
+          </v-card>
+          <v-btn color="deep-orange darken-3" @click.stop="saveRecipe()">Salvar Receita</v-btn>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Voltar</v-btn>
+          <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+        </v-stepper-content>        
       </v-stepper-items>
     </v-stepper>
                        
@@ -195,13 +245,21 @@ import _ from 'lodash';
 import _guid from 'Guid';
 import conversionEngine from '@/components/conversion-engine/conversion-engine';
 import numeral from 'numeral';
+import {VMoney} from 'v-money';
 
 export default {
   name: 'recipeRegister',
   props: ['showRecipeRegister'],
   mixins:[conversionEngine],
-  data () {
+  data () {    
     return {
+    price: 123.45,
+    money: {
+      decimal: ',',
+      thousands: '.',
+      precision: 2,
+      masked: true /* doesn't work with directive */
+    },      
       e1: 0,
       items:[],
       recipeCategories:[],
