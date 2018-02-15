@@ -1,7 +1,7 @@
 <template>
       <v-dialog v-model="showModal" persistent  max-width="500px">
         <v-card>
-            <v-toolbar color="amber darken-4" dark>
+            <v-toolbar color="deep-orange darken-3" dark>
               <v-icon dark>assignment</v-icon>
             <v-toolbar-title class="white--text">Inclusão de Materiais</v-toolbar-title>
             </v-toolbar>
@@ -18,14 +18,13 @@
                 v-model="material.name"
                 required
                 ref="material.name"
-                :rules="nameMaterialRules"
+                :rules="fieldRules.materialNameRules"
                 counter="30"
               ></v-text-field>
             </v-flex>
             <v-flex xs12>
               <v-text-field box dark
                 label="Descrição do Material"
-                :rules="descriptionMaterialRules"
                 v-model="material.description"
                 ref="material.description"
                 counter="50"
@@ -38,8 +37,11 @@
                 placeholder="Selecione"
                 :items="categories"
                 item-text="name"
+                item-value="id"
                 v-model="material.category"
+                auto
                 ref="material.category"
+                :rules="fieldRules.materialCategoryRules"
                 required
               ></v-select>
             </v-flex>
@@ -54,6 +56,7 @@
                     v-model="material.unities"
                     ref="material.unities"
                     persistent-hint
+                    :rules="fieldRules.unitMaterialRules"
                     required
                   ></v-select>
             </v-flex>
@@ -85,59 +88,32 @@ import _guid from 'Guid';
 
 export default {
   name: 'materialsRegister',
-  props: ['showMaterialsRegister'],
+  props: ['showMaterialsRegister','materialEditable'],
   data () {
     return {
-      material:{
-        id:'',
-        name:'',
-        category:'',
-        description:'',
-        quantity:'',
-        unities:''
-      },
+      material:{},
       valid:true,
       categories:[],
-      nameMaterialRules: [
-        (v) => !! this.material.name || 'Campo obrigatório',
-        (v) => !Number(this.material.name) || 'Nome inválido',
-        (v) => v.length <= 30 || 'Máximo de 30 caracteres'
-      ],
-      descriptionMaterialRules: [
-        (v) => !! this.material.description || 'Campo obrigatório',
-        (v) => !Number(this.material.description) || 'Descrição inválida',
-        (v) => v.length <= 50 || 'Máximo de 50 caracteres'
-      ],
-      unitMaterialRules:[
-        (v) => v.length > 0 || 'Campo obrigatório'
-      ],               
+      materials:[],
+      fieldRules:{
+        materialNameRules: [
+          v => !!v || 'O nome do material é obrigatório',
+          v => (v && v.length >= 5) || 'O nome do material deve ter no mínimo 5 caracteres',
+          v => (v && v.length <= 30) || 'O nome do material deve ter no máximo 30 caracteres'
+        ],
+        materialCategoryRules:[
+          (v) => !!v || 'Selecione a Categoria do Material'
+        ],          
+        unitMaterialRules:[
+          (v) => v.length > 0 || 'Selecione ao menos uma Unidade de medida'
+        ]          
+      },                    
       showModal: false,
-      select: null,
-      items: [{
-        description:'Gramas',
-        type:'gr',
-        unit:1000.0
-      },
-      {
-        description:'Miligramas',
-        type:'mg',
-        unit:1000.0
-      },
-      {
-        description:'Quilogramas',
-        type:'kg',
-        unit:1000.0
-      },
-      {
-        description:'Litros',
-        type:'l',
-        unit:1000.0
-      },
-      {
-        description:'Mililitros',
-        type:'ml',
-        unit:1000.0
-      }],      
+      items: [{description:'Gramas',type:'gr'},
+              {description:'Miligramas',type:'mg'},
+              {description:'Quilogramas',type:'kg'},
+              {description:'Litros',type:'l'},
+              {description:'Mililitros',type:'ml'}],      
     }
   },
   watch: {
@@ -146,7 +122,10 @@ export default {
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
-      }
+      },
+      materialEditable:function(material){
+        this.material = material;
+      }      
   },
   mounted(){
     this.categories = JSON.parse(this.$localStorage.get('categories'));
@@ -156,19 +135,31 @@ export default {
           this.showModal = showModal;
       },
       saveMaterial(){
-        if (this.$refs.form.validate()) {
+        if (!this.material.id && this.$refs.form.validate()) {
           var guid = _guid.create();
-          this.material.id =guid;
-          this.$parent.$emit('materialObject', _.clone(this.material));
-          this.clearForm();
-          this.showModal = false;
+          this.material.id =guid; 
+          this.materials.push(_.clone(this.material));         
+        }else if(this.material.id && this.$refs.form.validate()){
+          this.updateMaterial(this.material);
         }
+        else {
+          return;
+        }
+
+        this.persistMaterials();
+        this.clearForm();
+        this.$parent.$emit('materialObject', _.clone(this.material));        
+        this.showModal = false;        
       },
-      addCategory(category){
-        this.categories.push(category);
+      persistMaterials(){
+        this.$localStorage.set('materials', JSON.stringify(this.materials));
       },
+      updateMaterial(material){
+        var indexArray = _.findIndex(this.materials, function(o) { return o.id == material.id; });
+        this.materials[indexArray] = material;
+      },      
       clearForm(){
-        this.$refs.form.reset();
+        this.material = {};
       }
   }
 }

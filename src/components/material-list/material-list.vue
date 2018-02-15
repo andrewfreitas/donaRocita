@@ -27,20 +27,33 @@
       :items="materials"
       v-bind:search="search"
       class="elevation-1"
+      no-data-text="Não há dados cadastrados"
+      no-results-text="Dados não encontrados"
+      rows-per-page-text="Itens por página"      
     >
     <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.description }}</td>
-      <td class="text-xs-right">{{ props.item.category.name }}</td>
-      <td class="text-xs-right">
-        <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
-      </td>
+        <td class="text-xs-right">{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.description }}</td>
+        <td class="text-xs-right">{{ props.item.category.name }}</td>
+        <td class="text-xs-right">
+          <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
+        </td>
+        <td class="text-xs-right">
+          <v-btn fab dark  small color="green" @click="editMaterial(props.item)">
+            <v-icon dark>mode_edit</v-icon>
+          </v-btn>                  
+        </td>                 
+        <td class="text-xs-right">
+          <v-btn fab dark  small color="red" @click="removeCategory(props.item)">
+            <v-icon dark>remove</v-icon>
+          </v-btn>                  
+        </td>            
       </template>
   </v-data-table>
       </v-card>
     </v-flex>
   </v-layout>
-  <materials-register :show-materials-register.sync="showMaterialsRegister"></materials-register> 
+  <materials-register :show-materials-register.sync="showMaterialsRegister" :material-editable="materialEditable"></materials-register> 
 </div>
 </template>
 <script>
@@ -53,43 +66,30 @@ export default {
 data () {
       return {
           showMaterialsRegister: false,
+          materialEditable:{},
           search: '',
         headers: [
-          {
-            text: 'Nome do Material',
-            value: 'name'
-          },
-          { text: 'Descrição do Material', value: 'description' },
-          { text: 'Categoria', value: 'category' },
-          { text: 'Unid. Medida', value: 'unit' }
+          {text: 'Nome do Material',value: 'name'},
+          {text: 'Descrição do Material', value: 'description' },
+          {text: 'Categoria', value: 'category' },
+          {text: 'Unid. Medida', value: 'unit' },
+          {text: 'Editar', value: 'edit' },
+          {text: 'Excluir', value: 'delete' }
         ],
-        materials:[],
-        items: [
-          {
-            value: false,
-            name: 'Frozen Yogurt',
-            calories: 159,
-            fat: 6.0,
-            carbs: 24,
-            protein: 4.0
-          },
-          {
-            value: false,
-            name: 'Ice cream sandwich',
-            calories: 237,
-            fat: 9.0,
-            carbs: 37,
-            protein: 4.3
-          }
-
-
-        ]
+        materials:[]
       }
 },
   methods: {
       openModal(){
-          this.showMaterialsRegister = true;
-      }
+        this.showMaterialsRegister = true;
+      },
+      getMaterials(){
+        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      },
+      editMaterial(material){
+        this.materialEditable = _.clone(material);
+        this.showMaterialsRegister = true;
+      },      
   },
     mounted () {
       this.$on('showModal',function (show) {
@@ -102,7 +102,7 @@ data () {
           console.log(this.materials);
       });
       
-      this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      this.getMaterials();
   },  
 }
 </script>

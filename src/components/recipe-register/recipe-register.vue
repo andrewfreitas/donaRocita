@@ -185,48 +185,68 @@
           <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
         </v-stepper-content>
         <v-stepper-content step="4">
-          <v-card color="secondary" class="mb-5" height="200px">
+          <v-card color="secondary" class="mb-5" height="250px">
             <v-card-text>
             <v-layout row wrap>
-              <v-flex xs12 sm5>
-                <v-radio-group v-model="ex8" :mandatory="false" row>
-                  <v-radio label="Valor" value="radio-1" color="green"></v-radio>
-                  <v-radio label="Percentual" value="radio-2" color="green"></v-radio>
+              <v-flex xs12 sm4>
+                <v-radio-group v-model="profitType" :mandatory="true" row>
+                  <v-radio label="Valor" value="valuePrice" color="green"></v-radio>
+                  <v-radio label="Percentual" value="percentPrice" color="green"></v-radio>
                 </v-radio-group>
-              </v-flex>
-              <v-flex xs12 sm5>
-                <v-text-field
-                  label="Preço"
-                  required
-                  prefix="R$"
-                  v-model="recipe.price"
-                  ref="recipe.price">
-                </v-text-field>
-                <money style="display:none" v-model="recipe.price" v-bind="money"></money>             
-              </v-flex>              
-              <v-flex xs12 sm5>
-                <v-text-field dark
-                  label="Nome da Receita"
-                  v-model="recipe.name"
-                  required
-                  ref="recipe.name"
-                  counter="30"
-                ></v-text-field>
               </v-flex>
               <v-spacer></v-spacer>
               <v-flex xs12 sm5>
-                    <v-select
-                      label="Categoria da Receita"
-                      placeholder="Selecione"
-                      :items="recipeCategories"
-                      item-text="name"
-                      v-model="recipeItem.recipeCategory"
-                      ref="recipeItem.recipeCategory"
-                      required
-                    ></v-select>
+                <v-text-field
+                  label="Valor de Lucro"
+                  required
+                  prefix="R$"
+                  v-model="recipe.priceProfit"
+                  ref="recipe.priceProfit"
+                  v-show="profitType=='valuePrice'">
+                </v-text-field>
+                <money style="display:none" v-model="recipe.priceProfit" v-bind="money"></money>
+                <v-text-field
+                  label="Percentual de Lucro"
+                  required
+                  suffix="%"
+                  v-model="recipe.percentProfit"
+                  ref="recipe.percentProfit"
+                  v-show="profitType!='valuePrice'">
+                </v-text-field>
+                <money style="display:none" v-model="recipe.percentProfit" v-bind="money"></money>             
+              </v-flex>           
+              <v-flex xs12 sm4>
+                <v-switch label="Adicionar Custos Extras" v-model="adctionalCosts" color="green"></v-switch>
               </v-flex>
-            </v-layout>               
-            </v-card-text>                    
+              <v-spacer></v-spacer>
+              <v-flex xs12 sm5>
+                <v-text-field
+                  label="Custos adicionais"
+                  required
+                  prefix="R$"
+                  v-model="recipe.adctionalPrice"
+                  ref="recipe.adctionalPrice"
+                  :disabled="!adctionalCosts">
+                </v-text-field>
+                <money style="display:none" v-model="recipe.adctionalPrice" v-bind="money"></money>    
+              </v-flex>
+              <v-flex xs12 sm4>             
+              </v-flex>
+              <v-spacer></v-spacer>
+              <v-flex xs12 sm5>
+                <v-text-field
+                  label="Valor total da Receita"
+                  required
+                  prefix="R$"
+                  v-model="recipeTotalCost"
+                  ref="recipeTotalCost"
+                  disabled                
+                  box >
+                </v-text-field>
+                <money style="display:none" v-model="recipeTotalCost" v-bind="money"></money>    
+              </v-flex>                          
+            </v-layout>          
+            </v-card-text>                              
           </v-card>
           <v-btn color="deep-orange darken-3" @click.stop="saveRecipe()">Salvar Receita</v-btn>
           <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Voltar</v-btn>
@@ -254,13 +274,17 @@ export default {
   data () {    
     return {
     price: 123.45,
+    ex3: { label: 'thumb-color', val: 50, color: 'red' },
     money: {
       decimal: ',',
       thousands: '.',
       precision: 2,
       masked: true /* doesn't work with directive */
-    },      
+    },
+      adctionalCosts:false,
+    ex15:false,      
       e1: 0,
+      profitType:'valuePrice',
       items:[],
       recipeCategories:[],
       recipeItem:{},     
@@ -307,9 +331,25 @@ export default {
       });
 
       return numeral(totalCost).format('$ 0,0.00');
+    },
+    recipeProfitPrice: function(){
+      if(this.profitType != 'valuePrice'){
+        return numeral(this.summaryCost)._value * (this.recipe.percentProfit/100);
+      }
+
+      return numeral(this.recipe.priceProfit)._value;
+    },
+    recipeTotalCost: function(){
+      this.recipe.totalCost = numeral(this.summaryCost)._value +
+                              numeral(this.recipeProfitPrice)._value + 
+                              numeral(this.recipe.adctionalPrice || 0)._value;
+      return numeral(this.recipe.totalCost).format(' 0,0.00');
     }
   },
   watch: {
+      adctionalCosts: function(){
+        this.recipe.adctionalPrice = this.adctionalCosts == false ? 0 : this.recipe.adctionalPrice;
+      },
       selectedCategory: function(category){
         this.materials = _.filter(this.materials,function(material){ 
           return material.category.id == category.id;

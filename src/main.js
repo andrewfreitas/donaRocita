@@ -7,7 +7,9 @@ import Vuetify from 'vuetify'
 import('../node_modules/vuetify/dist/vuetify.min.css') // Ensure you are using css-loader
 import VueLocalStorage from 'vue-localstorage'
 import money from 'v-money'
+import Vuex from 'vuex'
 
+Vue.use(Vuex);
 Vue.use(VueLocalStorage);
 Vue.use(Vuetify);
 Vue.use(money, {precision: 4});
