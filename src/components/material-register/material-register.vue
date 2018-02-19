@@ -38,8 +38,8 @@
                 :items="categories"
                 item-text="name"
                 item-value="id"
+                return-object
                 v-model="material.category"
-                auto
                 ref="material.category"
                 :rules="fieldRules.materialCategoryRules"
                 required
@@ -47,15 +47,16 @@
             </v-flex>
             <v-flex xs12>
                   <v-select
-                    label="Unidades de Medida permitidas para este Material"
+                    label="Unidades de Medida para o Material"
                     placeholder="Selecione"
                     :items="items"
                     item-text="description"
+                    item-value="description"
                     chips
                     tags
+                    return-object
                     v-model="material.unities"
                     ref="material.unities"
-                    persistent-hint
                     :rules="fieldRules.unitMaterialRules"
                     required
                   ></v-select>
@@ -119,6 +120,8 @@ export default {
   watch: {
       showMaterialsRegister: function(show){
           this.showModal = show;
+          this.clearForm();
+          this.getMaterials();
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
@@ -128,9 +131,13 @@ export default {
       }      
   },
   mounted(){
-    this.categories = JSON.parse(this.$localStorage.get('categories'));
+    this.getCategpries();
+    this.getMaterials();
   },
   methods: {
+      getCategpries(){
+         this.categories = JSON.parse(this.$localStorage.get('categories'));
+      },
       actvModal(showModal){
           this.showModal = showModal;
       },
@@ -148,7 +155,7 @@ export default {
 
         this.persistMaterials();
         this.clearForm();
-        this.$parent.$emit('materialObject', _.clone(this.material));        
+        this.$parent.$emit('materialObject');        
         this.showModal = false;        
       },
       persistMaterials(){
@@ -160,7 +167,10 @@ export default {
       },      
       clearForm(){
         this.material = {};
-      }
+      },
+      getMaterials(){
+        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      },      
   }
 }
 </script>

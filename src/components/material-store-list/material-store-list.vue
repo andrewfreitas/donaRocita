@@ -24,19 +24,36 @@
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
-      :items="categories"
+      :items="materialsStore"
       v-bind:search="search"
       class="elevation-1"
+      no-data-text="Não há dados cadastrados"
+      no-results-text="Dados não encontrados"
+      rows-per-page-text="Itens por página"      
     >
     <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.description }}</td>
+      <td class="text-xs-right">{{ props.item.category.name }}</td>
+      <td class="text-xs-right">{{ props.item.material.description }}</td>
+      <td class="text-xs-right">{{ props.item.unitWeight }}</td>
+      <td class="text-xs-right">{{ props.item.quantity }}</td>
+      <td class="text-xs-right">{{ props.item.unit.description }}</td>
+      <td class="text-xs-right">{{ props.item.price }}</td>
+      <td class="text-xs-right">
+        <v-btn fab dark  small color="green" @click="editMaterialStore(props.item)">
+          <v-icon dark>mode_edit</v-icon>
+        </v-btn>                  
+      </td>                 
+      <td class="text-xs-right">
+        <v-btn fab dark  small color="red" @click="removeMaterialStore(props.item)">
+          <v-icon dark>remove</v-icon>
+        </v-btn>                  
+      </td>       
     </template>
   </v-data-table>
       </v-card>
     </v-flex>
   </v-layout>
-  <material-store-register :show-material-register.sync="showMaterialStoreRegister"></material-store-register> 
+  <material-store-register :show-material-register.sync="showMaterialStoreRegister" :material-store-editable="materialStoreEditable"></material-store-register> 
 </div>
 </template>
 <script>
@@ -52,31 +69,45 @@ data () {
           showMaterialStoreRegister: false,
           search: '',
         headers: [
-          {
-            text: 'Nome do Material',
-            value: 'name'
-          },
-          { text: 'Descrição do Material', value: 'description' }
+          { text: 'Categoria',value: 'category'},
+          { text: 'Descrição do Material', value: 'unitWeight' },
+          { text: 'Qtd da Embalagem', value: 'unitWeight' },
+          { text: 'Qtd Unitária', value: 'quantity' },
+          { text: 'Unidade de Medida', value: 'unity' },
+          { text: 'Preço Total', value: 'totalPrice' },
+          { text: 'Editar', value: 'edit' },
+          { text: 'Excluir', value: 'delete' }
         ],
-        categories:[]
+        categories:[],
+        materialsStore:[],
+        materialStoreEditable:{}
       }
 },
   methods: {
       openModal(){
           this.showMaterialStoreRegister = true;
-      }
+      },
+      getStore(){
+        this.materialsStore = this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
+      },
+      editMaterialStore(materialStore){
+        this.materialStoreEditable = materialStore;
+        this.showMaterialStoreRegister = true;
+      },
+      removeMaterialStore(){
+        
+      }      
   },
     mounted () {
       this.$on('showModal',function (show) {
           this.showMaterialStoreRegister = show;
       }); 
 
-      this.$on('categoryObject',function (categoryObject) {
-          this.categories.push(categoryObject);
-          this.$localStorage.set('categories', JSON.stringify(this.categories));
+      this.$on('materialStoreObject',function () {
+        this.getStore();
       });
       
-      this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
+      this.getStore();
   },  
 }
 </script>

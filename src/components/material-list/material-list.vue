@@ -22,6 +22,9 @@
                 Inclusão de Materiais
             </v-btn>          
         </v-toolbar>
+          <v-alert type="warning" dismissible v-model="deleteMaterial">
+            Não é possível excluir o material. Existe estoque associado ao material selecionado.
+          </v-alert>          
   <v-data-table
       v-bind:headers="headers"
       :items="materials"
@@ -44,7 +47,7 @@
           </v-btn>                  
         </td>                 
         <td class="text-xs-right">
-          <v-btn fab dark  small color="red" @click="removeCategory(props.item)">
+          <v-btn fab dark  small color="red" @click="removeMaterial(props.item)">
             <v-icon dark>remove</v-icon>
           </v-btn>                  
         </td>            
@@ -76,7 +79,9 @@ data () {
           {text: 'Editar', value: 'edit' },
           {text: 'Excluir', value: 'delete' }
         ],
-        materials:[]
+        materials:[],
+        materialsStore:[],
+        deleteMaterial:false
       }
 },
   methods: {
@@ -86,20 +91,40 @@ data () {
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
       },
+      getMaterialsStore(){
+        return this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
+      },      
       editMaterial(material){
         this.materialEditable = _.clone(material);
         this.showMaterialsRegister = true;
+      },
+      removeMaterial(material){
+        if(!this.verifyRelationship(material)){
+          this.materials = _.remove(this.materials, function(item) {
+            return item.id != material.id;
+          });
+
+          this.persistMaterials();
+        }else{
+          this.deleteMaterial = true;
+        }
+      },
+      persistMaterials(){
+        this.$localStorage.set('materials', JSON.stringify(this.materials));
       },      
+      verifyRelationship(material){
+        return _.size(_.filter(this.getMaterialsStore(),function(item){
+          return item.materialId == material.id;
+        })) > 0;
+      },                  
   },
     mounted () {
       this.$on('showModal',function (show) {
           this.showMaterialsRegister = show;
       }); 
 
-      this.$on('materialObject',function (materialObject) {
-          this.materials.push(materialObject);
-           this.$localStorage.set('materials', JSON.stringify(this.materials));
-          console.log(this.materials);
+      this.$on('materialObject',function () {
+        this.getMaterials();    
       });
       
       this.getMaterials();
