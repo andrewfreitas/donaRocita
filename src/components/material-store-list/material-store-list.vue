@@ -22,6 +22,9 @@
                 Estoque de Materiais
             </v-btn>          
         </v-toolbar>
+  <v-alert type="success" dismissible v-model="deleteMaterialStore">
+    Não é possível excluir a categoria. Existem receitas cadastradas utilizando o estoque do material existente.
+  </v-alert>         
   <v-data-table
       v-bind:headers="headers"
       :items="materialsStore"
@@ -80,7 +83,9 @@ data () {
         ],
         categories:[],
         materialsStore:[],
-        materialStoreEditable:{}
+        recipes:[],
+        materialStoreEditable:{},
+        deleteMaterialStore:false
       }
 },
   methods: {
@@ -94,9 +99,30 @@ data () {
         this.materialStoreEditable = materialStore;
         this.showMaterialStoreRegister = true;
       },
-      removeMaterialStore(){
-        
-      }      
+      removeMaterialStore(materialStore){
+        if(!this.verifyRelationship(materialStore)){
+          this.materialsStore = _.remove(this.materialsStore, function(item) {
+            return item.id != materialStore.id;
+          });
+
+          this.persistMaterialStore();
+        }else{
+          this.deleteMaterialStore = true;
+        }
+      },
+      verifyRelationship(material){
+        return _.size(_.filter(this.getRecipes(),function(recipe){
+          return _.filter(recipe.items,function(item){
+            return item.material.id == material.id;
+          });
+        })) > 0;
+      },
+      persistMaterialStore(){
+        this.$localStorage.set('materialStore', JSON.stringify(this.materialsStore));
+      },
+      getRecipes(){
+        return this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
+      }             
   },
     mounted () {
       this.$on('showModal',function (show) {

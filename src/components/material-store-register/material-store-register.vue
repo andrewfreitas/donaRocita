@@ -23,6 +23,7 @@
                       :disabled = "isEditing"
                       v-model="materialStore.category"
                       ref="materialStore.category"
+                      :rules="fieldRules.categoryRules"
                       required
                       @change="getMaterials()">
                     </v-select>
@@ -38,6 +39,7 @@
                       return-object
                       v-model="materialStore.material"
                       ref="materialStore.material"
+                      :rules="fieldRules.materialRules"
                       required>
                     </v-select>
                   </v-flex>                      
@@ -46,6 +48,7 @@
                       label="Quantidade Embalagem"
                       v-model="materialStore.unitWeight"
                       ref="materialStore.unitWeight"
+                      :rules="fieldRules.unitWeightRules"
                       counter="5"
                       required>
                     </v-text-field>
@@ -56,6 +59,7 @@
                       label="Quantidade Unitária"
                       v-model="materialStore.quantity"
                       ref="materialStore.quantity"
+                      :rules="fieldRules.quantityRules"
                       counter="5"
                       required>
                     </v-text-field>
@@ -64,12 +68,13 @@
                     <v-select
                       label="Unid. Medida"
                       placeholder="Selecione"
-                      :items.sync="materialStore.material.unities"
+                      :items.sync="availableUnities"
                       item-text="description"
                       item-value="type"
                       return-object
                       v-model="materialStore.unit"
                       ref="materialStore.unit"
+                      :rules="fieldRules.unitMaterialRules"
                       persistent-hint
                       required>
                     </v-select>
@@ -81,6 +86,7 @@
                       required
                       prefix="R$"
                       v-model="materialStore.price"
+                      :rules="fieldRules.priceRules"
                       ref="materialStore.price">
                     </v-text-field>
                     <money style="display:none" v-model="materialStore.price" v-bind="money"></money>             
@@ -124,6 +130,26 @@ export default {
         precision: 2,
         masked: true /* doesn't work with directive */
       },
+      fieldRules:{
+        categoryRules:[
+          (v) => !!v || 'Selecione a Categoria do Material'
+        ],
+        materialRules:[
+          (v) => !!v || 'Selecione o Material desejado'
+        ],
+        unitWeightRules:[
+          (v) => !!v || 'Digite a quantidade da Embalagem'
+        ],
+        quantityRules:[
+          (v) => !!v || 'Digite a quantidade de cada Item'
+        ],
+        priceRules:[
+          (v) => !!v || 'Digite a quantidade de cada Item'
+        ],                                                       
+        unitMaterialRules:[
+          (v) =>!!v || 'Selecione ao menos uma Unidade de medida'
+        ]          
+      },       
       materialStore:{
         material:{},
         category:{}
@@ -134,7 +160,7 @@ export default {
       valid:true,
       showModal: false,
       isEditing:false,
-      availableUnities:{}
+      availableUnities:[]
     }
   },
   watch: {
@@ -143,9 +169,16 @@ export default {
             this.materials = _.filter(this.materials,function(material){ 
               return material.category.id == category.id;
             });
-            this.availableUnities = this.materials.unities;   
+            this.availableUnities = [];   
           };
-      },         
+      },
+      'materialStore.material':function(material){
+        if(material){
+          this.availableUnities = material.unities;
+        }else{
+          this.availableUnities = [];
+        }
+      },        
       showMaterialRegister: function(show){
           this.showModal = show;
           this.getMaterialsStore();
