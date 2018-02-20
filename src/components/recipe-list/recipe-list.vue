@@ -7,7 +7,7 @@
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
         <v-toolbar color="deep-orange darken-3" dark>
-          <v-toolbar-title>Dona Rosita</v-toolbar-title>
+          <v-toolbar-title>Dona Rocita</v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -34,17 +34,26 @@
     >
     <template slot="items" slot-scope="props">
       <td class="text-xs-right">{{ props.item.name }}</td>
-    </template>
-    <template slot="expand" slot-scope="props">
-      <v-card flat>
-        <v-card-text>Peek-a-boo!</v-card-text>
-      </v-card>
-    </template>    
+      <td class="text-xs-right">{{ props.item.recipeCategory.name }}</td>
+      <td class="text-xs-right">{{ props.item.cost }}</td>
+      <td class="text-xs-right">{{ props.item.adctionalPriceFormatted }}</td>
+      <td class="text-xs-right">{{ props.item.totalCostFormatted }}</td>
+              <td class="text-xs-right">
+                <v-btn fab dark  small color="green" @click="editRecipe(props.item,'showRecipeRegister')">
+                  <v-icon dark>mode_edit</v-icon>
+                </v-btn>                  
+              </td>                 
+              <td class="text-xs-right">
+                <v-btn fab dark  small color="red" @click="removeRecipe(props.item)">
+                  <v-icon dark>remove</v-icon>
+                </v-btn>                  
+              </td>       
+    </template>   
   </v-data-table>
       </v-card>
     </v-flex>
   </v-layout>
-  <recipe-register :show-recipe-register.sync="showRecipeRegister"></recipe-register>
+  <recipe-register :show-recipe-register.sync="showRecipeRegister" :recipe-editable="recipeEditable"></recipe-register>
   <recipe-print :show-recipe-print.sync="showRecipePrint"></recipe-print> 
 </div>
 </template>
@@ -64,16 +73,16 @@ data () {
           showRecipePrint:false,
           search: '',
         headers: [
-          {
-            text: 'Nome da Receita',
-            value: 'name'
-          },
-          {
-            text: 'Descrição da Receita',
-            value: 'description'
-          }          
+          {text: 'Nome da Receita', value: 'name'},
+          {text: 'Categoria da Receita',value: 'description'},
+          {text: 'Preço de Custo',value: 'cost'},
+          {text: 'Custos Adicionais',value: 'cost'},
+          {text: 'Preço de Venda',value: 'cost'},
+          {text: 'Editar',value: 'cost'},
+          {text: 'Excluir',value: 'cost'}
         ],
-        recipes:[]
+        recipes:[],
+        recipeEditable:{},
       }
 },
   methods: {
@@ -82,6 +91,13 @@ data () {
       },
       getRecipes(){
         this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
+      },
+      editRecipe(recipe, modalItem){
+        this.recipeEditable = recipe;
+        this[modalItem] = true;
+      },
+      removeRecipe(){
+
       }
   },
     mounted () {

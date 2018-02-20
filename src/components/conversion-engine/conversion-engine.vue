@@ -17,9 +17,9 @@ export default {
     },     
     getMaterialStorage(item){
       this.materialStorage = JSON.parse(this.$localStorage.get('materialStore'))[0];
-      var totalQuantity = this.materialStorage.totalQuantity * this.materialStorage.unitWeight;
+      var totalQuantity = this.materialStorage.quantity * this.materialStorage.unitWeight;
       var minimumCovert = convertUnit(totalQuantity).from(this.materialStorage.unit.type).to(item.unit.type);
-      var cost = numeral((numeral(this.materialStorage.totalPrice)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
+      var cost = numeral((numeral(this.materialStorage.price)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
     
       return cost;
     }

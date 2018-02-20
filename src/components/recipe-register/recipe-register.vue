@@ -33,8 +33,8 @@
                     placeholder="Selecione"
                     :items="recipeCategories"
                     item-text="name"
-                    v-model="recipeItem.recipeCategory"
-                    ref="recipeItem.recipeCategory"
+                    v-model="recipe.recipeCategory"
+                    ref="recipe.recipeCategory"
                     required
                   ></v-select>
             </v-flex>               
@@ -181,7 +181,7 @@
             </v-data-table>
           </v-card>
           <v-btn color="deep-orange darken-3" @click.stop="e1 = 4">Continuar</v-btn>
-          <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Voltar</v-btn>
+          <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
           <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
         </v-stepper-content>
         <v-stepper-content step="4">
@@ -195,7 +195,7 @@
                 </v-radio-group>
               </v-flex>
               <v-spacer></v-spacer>
-              <v-flex xs12 sm5>
+              <v-flex xs12 sm6>
                 <v-text-field
                   label="Valor de Lucro"
                   required
@@ -215,11 +215,11 @@
                 </v-text-field>
                 <money style="display:none" v-model="recipe.percentProfit" v-bind="money"></money>             
               </v-flex>           
-              <v-flex xs12 sm4>
+              <v-flex xs12 sm6>
                 <v-switch label="Adicionar Custos Extras" v-model="adctionalCosts" color="green"></v-switch>
               </v-flex>
               <v-spacer></v-spacer>
-              <v-flex xs12 sm5>
+              <v-flex xs12 sm6>
                 <v-text-field
                   label="Custos adicionais"
                   required
@@ -230,10 +230,22 @@
                 </v-text-field>
                 <money style="display:none" v-model="recipe.adctionalPrice" v-bind="money"></money>    
               </v-flex>
-              <v-flex xs12 sm4>             
+              <v-flex xs12 sm5>
+                <v-divider></v-divider>
+                <v-text-field
+                  label="Valor de custo da Receita"
+                  required
+                  v-model="summaryCost"
+                  ref="recipeTotalCost"
+                  readonly="true"
+                  disabled                
+                  box >
+                </v-text-field>
+                <money style="display:none" v-model="summaryCost" v-bind="money"></money>                            
               </v-flex>
               <v-spacer></v-spacer>
-              <v-flex xs12 sm5>
+              <v-flex xs12 sm6>
+                <v-divider></v-divider>
                 <v-text-field
                   label="Valor total da Receita"
                   required
@@ -269,7 +281,7 @@ import {VMoney} from 'v-money';
 
 export default {
   name: 'recipeRegister',
-  props: ['showRecipeRegister'],
+  props: ['showRecipeRegister','recipeEditable'],
   mixins:[conversionEngine],
   data () {    
     return {
@@ -281,8 +293,7 @@ export default {
       precision: 2,
       masked: true /* doesn't work with directive */
     },
-      adctionalCosts:false,
-    ex15:false,      
+      adctionalCosts:false, 
       e1: 0,
       profitType:'valuePrice',
       items:[],
@@ -312,8 +323,6 @@ export default {
         { text: 'Unidade de Medida', value: 'unit' },
         { text: 'Vlr Custo', value: 'cost' }
       ],              
-      selectedMaterial:{},
-      selectedCategory:{},
       recipes:[],
       categories:[],
       materials:[],
@@ -324,17 +333,19 @@ export default {
   computed: {
     summaryCost: function(){
       
-      var totalCost = 0;
+      var totalCost = 0.00;
 
       _.forEach(this.recipe.items, function(item){
         totalCost += numeral(item.cost)._value;
       });
 
+      this.recipe.cost = numeral(totalCost).format('$ 0,0.00');
+
       return numeral(totalCost).format('$ 0,0.00');
     },
     recipeProfitPrice: function(){
       if(this.profitType != 'valuePrice'){
-        return numeral(this.summaryCost)._value * (this.recipe.percentProfit/100);
+        return numeral(this.summaryCost)._value * (numeral(this.recipe.percentProfit)._value / 100);
       }
 
       return numeral(this.recipe.priceProfit)._value;
@@ -343,18 +354,17 @@ export default {
       this.recipe.totalCost = numeral(this.summaryCost)._value +
                               numeral(this.recipeProfitPrice)._value + 
                               numeral(this.recipe.adctionalPrice || 0)._value;
+      
+      this.recipe.totalCostFormatted = numeral(this.recipe.totalCost).format('$ 0,0.00');
+
       return numeral(this.recipe.totalCost).format(' 0,0.00');
     }
   },
   watch: {
       adctionalCosts: function(){
-        this.recipe.adctionalPrice = this.adctionalCosts == false ? 0 : this.recipe.adctionalPrice;
-      },
-      selectedCategory: function(category){
-        this.materials = _.filter(this.materials,function(material){ 
-          return material.category.id == category.id;
-        });       
-      },    
+        this.recipe.adctionalPrice = this.adctionalCosts == false ? 0.00 : this.recipe.adctionalPrice;
+        this.recipe.adctionalPriceFormatted = numeral(this.recipe.adctionalPrice).format('$ 0,0.00');
+      },   
       'recipeItem.material': function(material){
         this.items = material.unities || null;
       },
@@ -363,7 +373,11 @@ export default {
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal,'showRecipeRegister');
-      }
+          this.e1 = 1;
+      },
+      recipeEditable:function(recipe){
+        this.recipe = recipe;
+      }      
   },
   methods: {
       actvModal(showModal){

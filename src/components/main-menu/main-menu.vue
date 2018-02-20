@@ -6,7 +6,7 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
-        <v-toolbar color="deep-orange darken-5" dark>
+        <v-toolbar color="deep-orange darken-3" dark>
           <v-toolbar-title>Dona Rocita</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
