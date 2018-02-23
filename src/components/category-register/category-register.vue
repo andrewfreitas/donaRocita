@@ -124,6 +124,7 @@ export default {
       },      
       clearForm(){
         this.category = {};
+        this.$refs.form.reset();
       }
   },
   mounted () {

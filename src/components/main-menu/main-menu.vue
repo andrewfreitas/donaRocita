@@ -7,6 +7,9 @@
     <v-flex xs12 sm8 offset-sm2>
       <v-card>
         <v-toolbar color="deep-orange darken-3" dark>
+          <v-avatar size="68px" class="elevation-10">
+            <img src="/static/logo1.png">
+          </v-avatar>                            
           <v-toolbar-title>Dona Rocita</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>

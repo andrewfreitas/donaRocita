@@ -16,6 +16,7 @@
                         <v-text-field box dark
                           label="Nome da Categoria de Receita"
                           v-model="recipeCategory.name"
+                          hint="Este campo separa as receitas por tipo, por exemplo BRIGADEIROS DE FRUTAS"
                           required
                           :rules="recipeCategoryRules"
                           ref="recipeCategory.name"
@@ -68,6 +69,7 @@ export default {
   watch: {
       showRecipeCategoryRegister: function(show){
           this.showModal = show;
+          this.clearForm();
           this.getRecipeCategories();
       },
       showModal:function(showModal){
@@ -111,6 +113,7 @@ export default {
       },       
       clearForm(){
         this.recipeCategory ={};
+        this.$refs.form.reset();
       }
   }
 }

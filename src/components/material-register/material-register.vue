@@ -167,6 +167,7 @@ export default {
       },      
       clearForm(){
         this.material = {};
+        this.$refs.form.reset();
       },
       getMaterials(){
         this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;

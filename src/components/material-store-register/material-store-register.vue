@@ -181,6 +181,7 @@ export default {
       },        
       showMaterialRegister: function(show){
           this.showModal = show;
+          this.clearForm();
           this.getMaterialsStore();
       },
       showModal:function(showModal){
