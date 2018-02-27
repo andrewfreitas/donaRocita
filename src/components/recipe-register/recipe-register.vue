@@ -230,11 +230,20 @@
                 </v-text-field>
                 <money style="display:none" v-model="recipe.adctionalPrice" v-bind="money"></money>    
               </v-flex>
-              <v-flex xs12 sm5>
-                <v-divider></v-divider>
+              <v-spacer></v-spacer>
+              <v-flex xs12 sm2>
                 <v-text-field
-                  label="Valor de custo da Receita"
-                  required
+                  label="Qtd. Receita"
+                  v-model="recipe.qtdRecipe"
+                  ref="recipe.qtdRecipe"
+                  box>
+                </v-text-field>
+                <money style="display:none" v-model="recipe.adctionalPrice" v-bind="money"></money>    
+              </v-flex>
+              <v-spacer></v-spacer>                            
+              <v-flex xs12 sm2>
+                <v-text-field
+                  label="Custo Receita"
                   v-model="summaryCost"
                   ref="recipeTotalCost"
                   readonly="true"
@@ -244,8 +253,19 @@
                 <money style="display:none" v-model="summaryCost" v-bind="money"></money>                            
               </v-flex>
               <v-spacer></v-spacer>
-              <v-flex xs12 sm6>
-                <v-divider></v-divider>
+              <v-flex xs12 sm3>
+                <v-text-field
+                  label="Valor Total por Item"
+                  v-model="summaryCost"
+                  ref="recipeTotalCost"
+                  readonly="true"
+                  disabled                
+                  box >
+                </v-text-field>
+                <money style="display:none" v-model="summaryCost" v-bind="money"></money>                            
+              </v-flex>
+              <v-spacer></v-spacer>              
+              <v-flex xs12 sm3>
                 <v-text-field
                   label="Valor total da Receita"
                   required
@@ -253,7 +273,7 @@
                   v-model="recipeTotalCost"
                   ref="recipeTotalCost"
                   disabled                
-                  box >
+                  box>
                 </v-text-field>
                 <money style="display:none" v-model="recipeTotalCost" v-bind="money"></money>    
               </v-flex>                          
@@ -293,6 +313,12 @@ export default {
       precision: 2,
       masked: true /* doesn't work with directive */
     },
+    quantity: {
+      decimal: ',',
+      thousands: '.',
+      precision: 0,
+      masked: true /* doesn't work with directive */
+    },    
       adctionalCosts:false, 
       e1: 0,
       profitType:'valuePrice',
@@ -374,6 +400,7 @@ export default {
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal,'showRecipeRegister');
           this.e1 = 1;
+          this.getRecipes();
       },
       recipeEditable:function(recipe){
         this.recipe = recipe;
@@ -383,6 +410,9 @@ export default {
       actvModal(showModal){
           this.showModal = showModal;
       },
+      getRecipes(){
+        this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
+      },      
       addRecipe(){
         if (this.$refs.form.validate()) {
           var guid = _guid.create();

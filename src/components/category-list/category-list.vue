@@ -53,37 +53,36 @@
       </v-flex>
     </v-layout>
     <category-register :show-category-register.sync="showCategoryRegister" :category-editable="categoryEditable"></category-register> 
-  {{users}}
   </div>
 </template>
 <script>
 
 import categoryRegister from '@/components/category-register/category-register';
-import dataConfig from '@/components/shared/data-config/data-config';
-import firebase from 'firebase';
+// import dataConfig from '@/components/shared/data-config/data-config';
+// import firebase from 'firebase';
 
-      var config = {
-        apiKey: "AIzaSyACO70rez3ZgOMQh-z6LVjsEV_ZNkbKV2o",
-        authDomain: "rocita-dc5e6.firebaseapp.com",
-        databaseURL: "https://rocita-dc5e6.firebaseio.com",
-        projectId: "rocita-dc5e6",
-        storageBucket: "rocita-dc5e6.appspot.com",
-        messagingSenderId: "721654080292"
-      };
-      var firebaseApp = firebase.initializeApp(config);
-      var db = firebaseApp.database();
+//       var config = {
+//         apiKey: "AIzaSyACO70rez3ZgOMQh-z6LVjsEV_ZNkbKV2o",
+//         authDomain: "rocita-dc5e6.firebaseapp.com",
+//         databaseURL: "https://rocita-dc5e6.firebaseio.com",
+//         projectId: "rocita-dc5e6",
+//         storageBucket: "rocita-dc5e6.appspot.com",
+//         messagingSenderId: "721654080292"
+//       };
+//       var firebaseApp = firebase.initializeApp(config);
+//       var db = firebaseApp.database();
 
 export default {
   name: 'MaterialList',
   components: {
       categoryRegister
   },
-  mixins: [dataConfig],
-  firebase: function (){
-    return{
-      users: db.ref('categories/materials')
-    }
-  },
+  // mixins: [dataConfig],
+  // firebase: function (){
+  //   return{
+  //     users: db.ref('categories/materials')
+  //   }
+  // },
   data () {
     return {
       showCategoryRegister: false,
