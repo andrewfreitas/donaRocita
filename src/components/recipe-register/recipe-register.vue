@@ -238,7 +238,7 @@
                   ref="recipe.qtdRecipe"
                   box>
                 </v-text-field>
-                <money style="display:none" v-model="recipe.adctionalPrice" v-bind="money"></money>    
+                <money style="display:none" v-model="recipe.qtdRecipe" v-bind="money"></money>    
               </v-flex>
               <v-spacer></v-spacer>                            
               <v-flex xs12 sm2>
@@ -256,13 +256,13 @@
               <v-flex xs12 sm3>
                 <v-text-field
                   label="Valor Total por Item"
-                  v-model="summaryCost"
+                  v-model="unitPrice"
                   ref="recipeTotalCost"
                   readonly="true"
                   disabled                
                   box >
                 </v-text-field>
-                <money style="display:none" v-model="summaryCost" v-bind="money"></money>                            
+                <money style="display:none" v-model="unitPrice" v-bind="money"></money>                            
               </v-flex>
               <v-spacer></v-spacer>              
               <v-flex xs12 sm3>
@@ -375,6 +375,19 @@ export default {
       }
 
       return numeral(this.recipe.priceProfit)._value;
+    },
+    unitPrice: function(){
+
+      var unitPrice = 0;
+
+      if(numeral(this.recipe.qtdRecipe)._value > 1){
+        unitPrice =  numeral(this.recipeTotalCost)._value / numeral(this.recipe.qtdRecipe)._value;
+      }
+
+      this.recipe.unitPriceRecipe = unitPrice; 
+      this.recipe.unitPriceRecipeFormatted = numeral(unitPrice).format('$ 0,0.00'); 
+
+      return numeral(unitPrice).format('$ 0,0.00');
     },
     recipeTotalCost: function(){
       this.recipe.totalCost = numeral(this.summaryCost)._value +
