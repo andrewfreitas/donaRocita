@@ -2,8 +2,9 @@
       <v-dialog v-model="showModal" persistent  max-width="500px">
         <v-card>
             <v-toolbar color="blue-grey darken-2" dark>
+            <v-toolbar-title class="white--text">
               <v-icon dark>assignment</v-icon>
-            <v-toolbar-title class="white--text">Inclusão de Materiais</v-toolbar-title>
+              Inclusão de Materiais</v-toolbar-title>
             </v-toolbar>
             <v-spacer></v-spacer>
   <v-layout justify-center>

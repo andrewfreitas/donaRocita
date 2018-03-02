@@ -2,8 +2,9 @@
   <v-dialog v-model="showModal" persistent  max-width="500px">
     <v-card>
       <v-toolbar color="blue-grey darken-2" dark>
-        <v-icon dark>assignment</v-icon>
-        <v-toolbar-title class="white--text">Estoque de Materiais</v-toolbar-title>
+        <v-toolbar-title class="white--text">
+          <v-icon dark>line_weight</v-icon>
+          Estoque de Materiais</v-toolbar-title>
       </v-toolbar>
       <v-spacer></v-spacer>
       <v-layout justify-center>
@@ -49,7 +50,8 @@
                       v-model="materialStore.unitWeight"
                       ref="materialStore.unitWeight"
                       :rules="fieldRules.unitWeightRules"
-                      counter="5"
+                      counter="4"
+                      mask="####"
                       required>
                     </v-text-field>
                   </v-flex>
@@ -61,6 +63,7 @@
                       ref="materialStore.quantity"
                       :rules="fieldRules.quantityRules"
                       counter="5"
+                      mask="#####"
                       required>
                     </v-text-field>
                   </v-flex>           
@@ -108,6 +111,15 @@
         </v-form>
       </v-layout>                        
     </v-card>
+    <v-snackbar
+      :timeout="6000"
+      :top="true"
+      :right="true"
+      v-model="showSnackbar"
+      color = "green darken-2"
+    >
+    {{snackBarText}} 
+    </v-snackbar>     
   </v-dialog>       
 </template>
 
@@ -115,13 +127,16 @@
 import _ from 'lodash';
 import _guid from 'Guid';
 import {VMoney} from 'v-money';
+import numberFunctions from '@/components/shared/number-functions';
 
 export default {
   name: 'materialsStoreRegister',
   props: ['showMaterialRegister','materialStoreEditable'],
+  mixins: [numberFunctions],
   data () {
     return {
       price: 123.45,
+      snackBarText:'',
       money: {
         decimal: ',',
         thousands: '.',
@@ -158,7 +173,8 @@ export default {
       valid:true,
       showModal: false,
       isEditing:false,
-      availableUnities:[]
+      availableUnities:[],
+      showSnackbar:false
     }
   },
   watch: {
@@ -192,7 +208,8 @@ export default {
       }      
   },
   mounted(){
-    this.categories = JSON.parse(this.$localStorage.get('categories'));
+    this.getCategories();
+    this.getMaterialsStore();
   },
   methods: {
       actvModal(showModal){
@@ -200,6 +217,13 @@ export default {
       },
       saveMaterialsStore(){
         if (!this.materialStore.id && this.$refs.form.validate()) {
+
+          if(this.storeExists(this.materialStore) > 0){
+            this.showSnackbar = true;
+            this.snackBarText = 'Já existe estoque para o produto selecionado.';
+            return;
+          }
+
           var guid = _guid.create();
           this.materialStore.id =guid;
           this.materialsStore.push(_.clone(this.materialStore));
@@ -215,6 +239,11 @@ export default {
         this.clearForm();
         this.showModal = false;  
       },
+      storeExists(storeItem){
+        return _.filter(this.materialsStore, function(item){ 
+          return item.material.id == storeItem.material.id
+          }).length;        
+      },
       updateMaterialStore(materialStore){
         var indexArray = _.findIndex(this.materialsStore, function(o) { return o.id == materialStore.id; });
         this.materialsStore[indexArray] = materialStore;
@@ -227,9 +256,13 @@ export default {
       },
       getMaterialsStore(){
         this.materialsStore = this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
+      },
+      getCategories(){
+        this.categories = JSON.parse(this.$localStorage.get('categories'));
       },      
       clearForm(){
         this.materialStore = {};
+         this.$refs.form.reset();
       }
   }
 }

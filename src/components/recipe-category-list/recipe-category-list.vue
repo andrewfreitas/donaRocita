@@ -4,8 +4,9 @@
     <v-flex xs12>
       <v-card>
         <v-toolbar color="blue-grey darken-2" dark>
-          <v-icon dark>grain</v-icon>
-          <v-toolbar-title>Categorias da Receita
+          <v-toolbar-title>
+            <v-icon dark>grain</v-icon>
+            Categorias da Receita
               <v-btn fab dark small color="amber darken-4" @click="openModal()">
                 <v-icon dark>add</v-icon>
               </v-btn>              

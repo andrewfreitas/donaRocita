@@ -2,8 +2,9 @@
 <v-dialog v-model="showModal" persistent  max-width="800px">
   <v-card>
     <v-toolbar color="blue-grey darken-2" dark>
+    <v-toolbar-title class="white--text">
       <v-icon dark>gesture</v-icon>
-    <v-toolbar-title class="white--text">Inclusão de Receita</v-toolbar-title>
+      Inclusão de Receita</v-toolbar-title>
     </v-toolbar>
     <v-spacer></v-spacer>
     <v-stepper v-model="e1" dark class="mt-2">
@@ -417,9 +418,6 @@ export default {
     unitPrice: function(){
 
       var unitPrice = 0;
-      if(numeral(this.recipe.qtdRecipe)._value == 0){
-        this.recipe.qtdRecipe = 1;
-      }
 
       if(numeral(this.recipe.qtdRecipe)._value >= 1){
         unitPrice =  numeral(this.recipeTotalCost)._value / numeral(this.recipe.qtdRecipe)._value;
@@ -462,6 +460,7 @@ export default {
           this.$parent.$emit('showModal', showModal,'showRecipeRegister');
           this.e1 = 1;
           this.getRecipes();
+          this.clearForm();
       },
       recipeEditable:function(recipe){
         this.recipe = recipe;
@@ -538,7 +537,7 @@ export default {
       },
       clearForm(){
         this.$refs.form.reset();
-        this.$refs.validStep1.reset();
+        this.$refs.step1.reset();
       }
   },
   mounted () {

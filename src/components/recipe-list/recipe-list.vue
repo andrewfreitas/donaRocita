@@ -4,8 +4,8 @@
     <v-flex xs12>
       <v-card>
         <v-toolbar color="blue-grey darken-2" dark>
-          <v-icon dark>gesture</v-icon>
           <v-toolbar-title>
+            <v-icon dark>gesture</v-icon>
             Inclusão de Receitas
               <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipeRegister')">
                 <v-icon dark>add</v-icon>
@@ -30,8 +30,8 @@
       class="elevation-1"
     >
     <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.name }}</td>
-      <td class="text-xs-right">{{ props.item.recipeCategory.name }}</td>
+      <td class="text-xs-left">{{ props.item.name }}</td>
+      <td class="text-xs-left">{{ props.item.recipeCategory.name }}</td>
       <td class="text-xs-right">{{ props.item.cost }}</td>
       <td class="text-xs-right">{{ props.item.adctionalPriceFormatted }}</td>
       <td class="text-xs-right">{{ props.item.totalCostFormatted }}</td>
@@ -70,8 +70,8 @@ data () {
           showRecipePrint:false,
           search: '',
         headers: [
-          {text: 'Nome da Receita', value: 'name'},
-          {text: 'Categoria da Receita',value: 'description'},
+          {text: 'Nome da Receita', value: 'name', align: 'left'},
+          {text: 'Categoria da Receita',value: 'description', align: 'left'},
           {text: 'Preço de Custo',value: 'cost'},
           {text: 'Custos Adicionais',value: 'cost'},
           {text: 'Preço de Venda',value: 'cost'},

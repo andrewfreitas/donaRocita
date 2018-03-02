@@ -2,8 +2,9 @@
       <v-dialog v-model="showModal" persistent  max-width="400px">
         <v-card>
             <v-toolbar color="blue-grey darken-2" dark>
+            <v-toolbar-title class="white--text">
               <v-icon dark>grain</v-icon>
-            <v-toolbar-title class="white--text">Inclusão de Categorias da Receita</v-toolbar-title>
+              Inclusão de Categorias da Receita</v-toolbar-title>
             </v-toolbar>
             <v-spacer></v-spacer>
               <v-form v-model="valid" ref="form" lazy-validation>
