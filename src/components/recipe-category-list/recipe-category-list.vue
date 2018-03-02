@@ -1,13 +1,15 @@
 <template>
 <div>
-        <div class="ui container">
-        <h2 class="ui dividing header"></h2>                
-    </div>
   <v-layout row>
-    <v-flex xs12 sm7 offset-sm2>
+    <v-flex xs12>
       <v-card>
-        <v-toolbar color="deep-orange darken-3" dark>
-          <v-toolbar-title>Dona Rocita</v-toolbar-title>
+        <v-toolbar color="blue-grey darken-2" dark>
+          <v-icon dark>grain</v-icon>
+          <v-toolbar-title>Categorias da Receita
+              <v-btn fab dark small color="amber darken-4" @click="openModal()">
+                <v-icon dark>add</v-icon>
+              </v-btn>              
+          </v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -15,12 +17,7 @@
         single-line
         hide-details
         v-model="search"
-      ></v-text-field>
-      <v-spacer></v-spacer>
-            <v-btn dark small color="amber darken-4" @click="openModal()">
-                <v-icon dark>grain</v-icon>
-                Inclusão de Categoria da Receita
-            </v-btn>          
+      ></v-text-field>     
         </v-toolbar>
   <v-alert type="success" dismissible v-model="deleteRecipeCategory">
     Não é possível excluir a categoria de receita. Existem receitas cadastradas utilizando categoria de receita existente.
@@ -35,7 +32,7 @@
       rows-per-page-text="Itens por página"        
     >
     <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.name }}</td>
+      <td class="text-xs-left">{{ props.item.name }}</td>
       <td class="text-xs-right">
         <v-btn fab dark  small color="green" @click="editRecipeCategory(props.item)">
           <v-icon dark>mode_edit</v-icon>
@@ -68,7 +65,7 @@ data () {
         showRecipeCategoryRegister: false,
         search: '',
         headers: [
-          {text: 'Nome do Categoria',value: 'name'},
+          {text: 'Nome do Categoria',value: 'name', align: 'left'},
           {text: 'Editar',value: 'edit'},
           {text: 'Excluir',value: 'delete'}
         ],

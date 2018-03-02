@@ -1,12 +1,12 @@
 <template>
+<div>
   <v-dialog v-model="showModal" persistent  max-width="500px">
     <v-card>
-        <v-toolbar color="deep-orange darken-3" dark>
-          <v-icon dark>weekend</v-icon>
+        <v-toolbar color="blue-grey darken-2" dark>
+          <v-icon dark>printer</v-icon>
           <v-toolbar-title class="white--text">Impressão de Receitas</v-toolbar-title>
         </v-toolbar>
         <v-spacer></v-spacer>
-      <v-layout justify-center>
         <v-form v-model="valid" ref="form" lazy-validation>
           <v-flex xs12>
             <v-card ref="form">
@@ -52,32 +52,29 @@
               <v-divider></v-divider>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                  <v-btn dark small @click="showModal = false" color="orange darken-4">
-                    <v-icon dark>replay</v-icon>
-                    Cancelar
-                  </v-btn>
-                  <v-btn dark small @click="print()" router color="orange darken-4" :disabled="!valid">
-                    <v-icon dark>weekend</v-icon>
+                  <v-btn dark @click="print()" router color="orange darken-4" :disabled="!valid">
                     Imprimir
                   </v-btn>
+                  <v-btn dark @click="showModal = false" color="orange darken-4">
+                    Cancelar
+                  </v-btn>                  
               </v-card-actions>
             </v-card>
           </v-flex>
-        </v-form>
-      </v-layout>                        
+        </v-form>                   
     </v-card>
-  </v-dialog>     
+  </v-dialog>
+</div>     
 </template>
 <script>
-
-import pdfPrinter from '@/components/shared/pdf-print';
+// import pdfPrinter from '@/components/shared/pdf-print';
 import _ from 'lodash';
-import _guid from 'Guid';
+// import _guid from 'Guid';
 
 export default {
-  name: 'recipePrint',
+  name: 'recipePrint', 
   props: ['showRecipePrint'],
-  mixins:[pdfPrinter],
+  // mixins:[pdfPrinter],
   data () {
     return {
       recipePrinter:{
@@ -103,9 +100,6 @@ export default {
     this.getRecipeCategories();
   },
   methods: {
-    actvModal(showModal){
-        this.showModal = showModal;
-    },
     getRecipeCategories(){
       this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
       this.recipeCategories.push({id:'0',name:'Todas'});
@@ -113,6 +107,7 @@ export default {
     },       
     print(){
       window.open('#/recipe-print-view', '_blank');
+      //this.showPrintPreview = true;
     },
     clearForm(){
       this.$refs.form.reset();

@@ -1,13 +1,16 @@
 <template>
 <div>
-        <div class="ui container">
-        <h2 class="ui dividing header"></h2>                
-    </div>
   <v-layout row>
-    <v-flex xs12 sm8 offset-sm2>
+    <v-flex xs12 sm11>
       <v-card>
-        <v-toolbar color="deep-orange darken-3" dark>
-          <v-toolbar-title>Dona Rocita</v-toolbar-title>
+        <v-toolbar color="blue-grey darken-2" dark>
+          <v-toolbar-title>
+            <v-icon>line_weight</v-icon>
+            Estoque de Materiais
+              <v-btn fab dark small color="amber darken-4" @click="openModal()">
+                <v-icon dark>add</v-icon>
+              </v-btn>             
+          </v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -15,12 +18,7 @@
         single-line
         hide-details
         v-model="search"
-      ></v-text-field>
-      <v-spacer></v-spacer>
-            <v-btn dark small color="amber darken-4" @click="openModal()">
-                <v-icon dark>web</v-icon>
-                Estoque de Materiais
-            </v-btn>          
+      ></v-text-field>        
         </v-toolbar>
   <v-alert type="success" dismissible v-model="deleteMaterialStore">
     Não é possível excluir a categoria. Existem receitas cadastradas utilizando o estoque do material existente.
@@ -35,7 +33,7 @@
       rows-per-page-text="Itens por página"      
     >
     <template slot="items" slot-scope="props">
-      <td class="text-xs-right">{{ props.item.category.name }}</td>
+      <!-- <td class="text-xs-right">{{ props.item.category.name }}</td> -->
       <td class="text-xs-right">{{ props.item.material.description }}</td>
       <td class="text-xs-right">{{ props.item.unitWeight }}</td>
       <td class="text-xs-right">{{ props.item.quantity }}</td>
@@ -72,12 +70,12 @@ data () {
           showMaterialStoreRegister: false,
           search: '',
         headers: [
-          { text: 'Categoria',value: 'category'},
-          { text: 'Descrição do Material', value: 'unitWeight' },
-          { text: 'Qtd da Embalagem', value: 'unitWeight' },
+          // { text: 'Categoria',value: 'category'},
+          { text: 'Descrição Material', value: 'unitWeight' },
+          { text: 'Qtd. Embalagem', value: 'unitWeight' },
           { text: 'Qtd Unitária', value: 'quantity' },
-          { text: 'Unidade de Medida', value: 'unity' },
-          { text: 'Preço Total', value: 'totalPrice' },
+          { text: 'Unid. de Medida', value: 'unity' },
+          { text: 'Preço', value: 'totalPrice' },
           { text: 'Editar', value: 'edit' },
           { text: 'Excluir', value: 'delete' }
         ],

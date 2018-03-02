@@ -1,13 +1,19 @@
 <template>
 <div>
-        <div class="ui container">
-        <h2 class="ui dividing header"></h2>                
-    </div>
   <v-layout row>
-    <v-flex xs12 sm8 offset-sm2>
+    <v-flex xs12>
       <v-card>
-        <v-toolbar color="deep-orange darken-3" dark>
-          <v-toolbar-title>Dona Rocita</v-toolbar-title>
+        <v-toolbar color="blue-grey darken-2" dark>
+          <v-icon dark>gesture</v-icon>
+          <v-toolbar-title>
+            Inclusão de Receitas
+              <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipeRegister')">
+                <v-icon dark>add</v-icon>
+              </v-btn>
+              <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipePrint')">
+                <v-icon dark>print</v-icon>
+              </v-btn>                                
+          </v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -15,16 +21,7 @@
         single-line
         hide-details
         v-model="search"
-      ></v-text-field>
-      <v-spacer></v-spacer>
-            <v-btn dark small color="amber darken-4" @click="openModal('showRecipeRegister')">
-                <v-icon dark>gesture</v-icon>
-                Inclusão de Receitas
-            </v-btn>
-            <v-btn dark small color="amber darken-4" @click="openModal('showRecipePrint')">
-                <v-icon dark>weekend</v-icon>
-                Imprimir Receitas
-            </v-btn>                           
+      ></v-text-field>                       
         </v-toolbar>
   <v-data-table
       v-bind:headers="headers"
@@ -96,8 +93,15 @@ data () {
         this.recipeEditable = recipe;
         this[modalItem] = true;
       },
-      removeRecipe(){
+      removeRecipe(recipe){
+        this.recipes = _.remove(this.recipes, function(item) {
+          return item.id != recipe.id;
+        });
 
+        this.persistRecipes();
+      },
+      persistRecipes(){
+        this.$localStorage.set('recipes', JSON.stringify(this.recipes));
       }
   },
     mounted () {

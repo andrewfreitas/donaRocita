@@ -43,10 +43,10 @@ export default new Router({
       name: 'recipeCategoryList',
       component: RecipeCategoryList
     },
-    {
-      path: '/recipe-print-view',
-      name: 'recipePrintView',
-      component: RecipePrintView
-    }                                              
+     {
+       path: '/recipe-print-view',
+       name: 'recipePrintView',
+       component: RecipePrintView
+     }                                              
   ]
 })

@@ -1,13 +1,16 @@
 <template>
 <div>
-        <div class="ui container">
-        <h2 class="ui dividing header"></h2>                
-    </div>
   <v-layout row>
-    <v-flex xs12 sm8 offset-sm2>
+    <v-flex xs12>
       <v-card>
-        <v-toolbar color="deep-orange darken-3" dark>
-          <v-toolbar-title>Dona Rocita</v-toolbar-title>
+        <v-toolbar color="blue-grey darken-2" dark>
+          <v-toolbar-title>
+            <v-icon>assignment</v-icon>
+            Materiais
+              <v-btn fab dark small color="amber darken-4" @click="openModal()">
+                <v-icon dark>add</v-icon>
+              </v-btn> 
+          </v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
         append-icon="search"
@@ -15,12 +18,7 @@
         single-line
         hide-details
         v-model="search"
-      ></v-text-field>
-      <v-spacer></v-spacer>
-            <v-btn dark small color="amber darken-4" @click="openModal()">
-                <v-icon dark>assignment</v-icon>
-                Inclusão de Materiais
-            </v-btn>          
+      ></v-text-field>        
         </v-toolbar>
           <v-alert type="warning" dismissible v-model="deleteMaterial">
             Não é possível excluir o material. Existe estoque associado ao material selecionado.
@@ -35,9 +33,9 @@
       rows-per-page-text="Itens por página"      
     >
     <template slot="items" slot-scope="props">
-        <td class="text-xs-right">{{ props.item.name }}</td>
-        <td class="text-xs-right">{{ props.item.description }}</td>
-        <td class="text-xs-right">{{ props.item.category.name }}</td>
+        <td class="text-xs-left">{{ props.item.name }}</td>
+        <td class="text-xs-left">{{ props.item.description }}</td>
+        <td class="text-xs-left">{{ props.item.category.name }}</td>
         <td class="text-xs-right">
           <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
         </td>
@@ -72,10 +70,10 @@ data () {
           materialEditable:{},
           search: '',
         headers: [
-          {text: 'Nome do Material',value: 'name'},
-          {text: 'Descrição do Material', value: 'description' },
-          {text: 'Categoria', value: 'category' },
-          {text: 'Unid. Medida', value: 'unit' },
+          {text: 'Nome do Material',value: 'name', align: 'left'},
+          {text: 'Descrição do Material', value: 'description' , align: 'left'},
+          {text: 'Categoria', value: 'category' , align: 'left'},
+          {text: 'Unid. Medida', value: 'unit' , align: 'center'},
           {text: 'Editar', value: 'edit' },
           {text: 'Excluir', value: 'delete' }
         ],

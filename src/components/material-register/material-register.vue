@@ -1,7 +1,7 @@
 <template>
       <v-dialog v-model="showModal" persistent  max-width="500px">
         <v-card>
-            <v-toolbar color="deep-orange darken-3" dark>
+            <v-toolbar color="blue-grey darken-2" dark>
               <v-icon dark>assignment</v-icon>
             <v-toolbar-title class="white--text">Inclusão de Materiais</v-toolbar-title>
             </v-toolbar>
@@ -66,13 +66,11 @@
           <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn dark small @click="showModal = false" color="orange darken-4">
-              <v-icon dark>replay</v-icon>
-              Fechar</v-btn>
-            <v-btn dark small @click="saveMaterial()" color="orange darken-4" :disabled="!valid">
-              <v-icon dark>done</v-icon>
+            <v-btn dark  @click="saveMaterial()" color="orange darken-4" :disabled="!valid">
               Salvar
-              </v-btn>
+              </v-btn>            
+            <v-btn dark  @click="showModal = false" color="orange darken-4">
+              Cancelar</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -110,7 +108,7 @@ export default {
         ]          
       },                    
       showModal: false,
-      items: [{description:'Gramas',type:'gr'},
+      items: [{description:'Gramas',type:'g'},
               {description:'Miligramas',type:'mg'},
               {description:'Quilogramas',type:'kg'},
               {description:'Litros',type:'l'},

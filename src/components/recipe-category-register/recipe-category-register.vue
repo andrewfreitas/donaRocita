@@ -1,18 +1,16 @@
 <template>
       <v-dialog v-model="showModal" persistent  max-width="400px">
         <v-card>
-            <v-toolbar color="deep-orange darken-3" dark>
+            <v-toolbar color="blue-grey darken-2" dark>
               <v-icon dark>grain</v-icon>
             <v-toolbar-title class="white--text">Inclusão de Categorias da Receita</v-toolbar-title>
             </v-toolbar>
             <v-spacer></v-spacer>
-            <v-layout justify-center>
               <v-form v-model="valid" ref="form" lazy-validation>
-                <v-flex xs12>
+                <v-flex shrink>
                   <v-card ref="form">
                     <v-card-text>
-                      <v-layout row wrap>
-                      <v-flex xs12>
+                      <v-flex shrink>
                         <v-text-field box dark
                           label="Nome da Categoria de Receita"
                           v-model="recipeCategory.name"
@@ -23,23 +21,19 @@
                           counter="30"
                         ></v-text-field>
                       </v-flex>
-                      </v-layout>
                     </v-card-text>
                     <v-divider></v-divider>
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn dark small @click="showModal = false" color="orange darken-4">
-                        <v-icon dark>replay</v-icon>
-                        Fechar</v-btn>
-                      <v-btn dark small @click="saveRecipeCategory()" color="orange darken-4" :disabled="!valid">
-                        <v-icon dark>done</v-icon>
+                      <v-btn dark @click="saveRecipeCategory()" color="orange darken-4" :disabled="!valid">
                         Salvar
-                        </v-btn>
+                        </v-btn>                      
+                      <v-btn dark @click="showModal = false" color="orange darken-4">
+                        Cancelar</v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-flex>
-              </v-form>
-            </v-layout>                        
+              </v-form>                      
         </v-card>
       </v-dialog>       
 </template>

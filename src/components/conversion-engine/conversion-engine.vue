@@ -12,20 +12,26 @@ export default {
   },
   methods:{
     convertNumber(item){
-      
-      return this.getMaterialStorage(item);
+      var ItemStorage = this.getItemStorage(item);
+      return this.getMaterialCosts(ItemStorage,item);
     },     
-    getMaterialStorage(item){
-      this.materialStorage = JSON.parse(this.$localStorage.get('materialStore'))[0];
-      var totalQuantity = this.materialStorage.quantity * this.materialStorage.unitWeight;
-      var minimumCovert = convertUnit(totalQuantity).from(this.materialStorage.unit.type).to(item.unit.type);
-      var cost = numeral((numeral(this.materialStorage.price)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
+    getMaterialStorage(){
+      this.materialStorage = JSON.parse(this.$localStorage.get('materialStore'));
+    },
+    getItemStorage(item){
+      return _.find(this.materialStorage,function(mStorage){ return mStorage.material.id == item.material.id});
+    },
+    getMaterialCosts(itemStorage,item){
+      var totalQuantity = itemStorage.quantity * itemStorage.unitWeight;
+      var minimumCovert = convertUnit(totalQuantity).from(itemStorage.unit.type).to(item.unit.type);
+      var cost = numeral((numeral(itemStorage.price)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
     
       return cost;
     }
   },
   mounted(){
       numeral.locale('pt-BR');
+      this.getMaterialStorage();
   }
 }
 </script>
