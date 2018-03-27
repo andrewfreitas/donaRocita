@@ -28,6 +28,7 @@
       :items="recipeCategories"
       v-bind:search="search"
       class="elevation-1"
+      :loading="showLoader"
       no-data-text="Não há dados cadastrados"
       no-results-text="Dados não encontrados"
       rows-per-page-text="Itens por página"        
@@ -55,6 +56,7 @@
 <script>
 
 import recipeCategoryRegister from '@/components/recipe-category-register/recipe-category-register';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'recipeCategoryList',
@@ -72,6 +74,7 @@ data () {
         ],
         recipeCategories:[],
         recipeCategoryEditable:{},
+        showLoader:true,
         deleteRecipeCategory:false
       }
 },
@@ -80,22 +83,25 @@ data () {
           this.showRecipeCategoryRegister = true;
       },
       editRecipeCategory(recipeCategory){
-        this.recipeCategoryEditable = recipeCategory;
+        this.recipeCategoryEditable = recipeCategory['.key'];
         this.showRecipeCategoryRegister = true;
-      },      
-      getRecipeCategories(){
-          this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
       },
+      getRecipeCategories(){
+          this.$bindAsArray(
+            'recipeCategories',
+            db.ref('rcita/recipeCategories'),
+            null,
+            ()=> this.showLoader = false
+        );
+      },            
       removeRecipeCategory(recipeCategory){
-        if(!this.verifyRelationship(recipeCategory)){
-          this.recipeCategories = _.remove(this.recipeCategories, function(item) {
-            return item.id != recipeCategory.id;
-          });
 
-          this.persistRecipeCategories();
-        }else{
+        if(this.verifyRelationship(recipeCategory)){
           this.deleteRecipeCategory = true;
-        }
+          return;
+        };
+
+        this.$firebaseRefs.recipeCategories.child(recipeCategory['.key']).remove();
       },
       verifyRelationship(recipeCategory){
         return _.size(_.filter(this.getRecipes(),function(recipe){
@@ -115,11 +121,7 @@ data () {
       this.$on('showModal',function (show) {
           this.showRecipeCategoryRegister = show;
       }); 
-
-      this.$on('categoryObject',function (categoryObject) {
-            this.getRecipeCategories();
-      });
-      
+            
       this.getRecipeCategories();
   },  
 }

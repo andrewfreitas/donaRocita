@@ -5,21 +5,13 @@ import convertUnit from 'convert-units';
 import numeral from 'numeral';
 
 export default {
-  data () {
-    return {
-      materialStorage:{}
-    }
-  },
   methods:{
-    convertNumber(item){
-      var ItemStorage = this.getItemStorage(item);
+    convertNumber(item,materialsStore){
+      var ItemStorage = this.getItemStorage(item,materialsStore);
       return this.getMaterialCosts(ItemStorage,item);
     },     
-    getMaterialStorage(){
-      this.materialStorage = JSON.parse(this.$localStorage.get('materialStore'));
-    },
-    getItemStorage(item){
-      return _.find(this.materialStorage,function(mStorage){ return mStorage.material.id == item.material.id});
+    getItemStorage(item,materialsStore){
+      return _.find(materialsStore,function(mStorage){ return mStorage.material == item.material['.key']});
     },
     getMaterialCosts(itemStorage,item){
       var totalQuantity = itemStorage.quantity * itemStorage.unitWeight;
@@ -31,7 +23,6 @@ export default {
   },
   mounted(){
       numeral.locale('pt-BR');
-      this.getMaterialStorage();
   }
 }
 </script>

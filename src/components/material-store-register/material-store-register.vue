@@ -25,15 +25,14 @@
                       v-model="materialStore.category"
                       ref="materialStore.category"
                       :rules="fieldRules.categoryRules"
-                      required
-                      @change="getMaterials()">
+                      required>
                     </v-select>
                   </v-flex>
                   <v-flex xs12>
                     <v-select
                       label="Materiais Disponíveis"
                       placeholder="Selecione"
-                      :items="materials"
+                      :items="availableMaterials"
                       item-text="name"
                       item-value="id"
                       :disabled = "isEditing"
@@ -128,6 +127,7 @@ import _ from 'lodash';
 import _guid from 'Guid';
 import {VMoney} from 'v-money';
 import numberFunctions from '@/components/shared/number-functions';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'materialsStoreRegister',
@@ -135,7 +135,6 @@ export default {
   mixins: [numberFunctions],
   data () {
     return {
-      price: 123.45,
       snackBarText:'',
       money: {
         decimal: ',',
@@ -165,11 +164,13 @@ export default {
       },       
       materialStore:{
         material:{},
-        category:{}
+        category:{},
+        price:0
       },
       materialsStore:[],
       categories:[],
       materials:[],
+      availableMaterials:[],
       valid:true,
       showModal: false,
       isEditing:false,
@@ -180,8 +181,8 @@ export default {
   watch: {
       'materialStore.category': function(category){
           if(category){
-            this.materials = _.filter(this.materials,function(material){ 
-              return material.category.id == category.id;
+            this.availableMaterials = _.filter(this.materials,function(material){ 
+              return material.category == category['.key'];
             });
             this.availableUnities = [];   
           };
@@ -201,9 +202,10 @@ export default {
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
       },
-      materialStoreEditable:function(materialStore){
-        this.materialStore = materialStore;
-        this.materials = [materialStore.material];
+      materialStoreEditable:function(id){
+        this.materialStore = _.find(this.materialsStore,function(m) {return m['.key'] == id});
+        this.materialStore.category = this.getCategoryById(this.materialStore.category);
+        this.materialStore.material = this.getMaterialById(this.materialStore.material);
         this.isEditing = true;
       }      
   },
@@ -212,57 +214,67 @@ export default {
     this.getMaterialsStore();
   },
   methods: {
-      actvModal(showModal){
-          this.showModal = showModal;
-      },
       saveMaterialsStore(){
-        if (!this.materialStore.id && this.$refs.form.validate()) {
+
+        this.materialStore.category = this.materialStore.category['.key'];
+        this.materialStore.material = this.materialStore.material['.key'];
+
+        if (!this.materialStore['.key']) {
 
           if(this.storeExists(this.materialStore) > 0){
             this.showSnackbar = true;
             this.snackBarText = 'Já existe estoque para o produto selecionado.';
             return;
           }
-
-          var guid = _guid.create();
-          this.materialStore.id =guid;
-          this.materialsStore.push(_.clone(this.materialStore));
-        }else if(this.materialStore.id && this.$refs.form.validate()){
+          this.$firebaseRefs.materialsStore.push(_.clone(this.materialStore));                   
+        }else{
           this.updateMaterialStore(this.materialStore);
         }
-        else{
-          return;
-        }
 
-        this.persistMaterialStore();
-        this.$parent.$emit('materialStoreObject', _.clone(this.materialStore));
         this.clearForm();
         this.showModal = false;  
       },
       storeExists(storeItem){
         return _.filter(this.materialsStore, function(item){ 
-          return item.material.id == storeItem.material.id
+          return item.material == storeItem.material
           }).length;        
       },
       updateMaterialStore(materialStore){
-        var indexArray = _.findIndex(this.materialsStore, function(o) { return o.id == materialStore.id; });
-        this.materialsStore[indexArray] = materialStore;
-      },
-      persistMaterialStore(){
-        this.$localStorage.set('materialStore', JSON.stringify(this.materialsStore));
-      },      
-      getMaterials(){
-        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
-      },
-      getMaterialsStore(){
-        this.materialsStore = this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
+        const copyObj = _.clone(materialStore);
+        delete copyObj['.key'];
+        this.$firebaseRefs.materialsStore.child(materialStore['.key']).set(copyObj);
       },
       getCategories(){
-        this.categories = JSON.parse(this.$localStorage.get('categories'));
-      },      
+          this.$bindAsArray(
+            'categories',
+            db.ref('rcita/categories'),
+            null,
+            () => this.getMaterials()
+        );
+      },
+      getMaterials(){
+         this.$bindAsArray(
+           'materials',
+           db.ref('rcita/materials')
+        );
+      },
+      getMaterialsStore(){
+          this.$bindAsArray(
+            'materialsStore',
+            db.ref('rcita/materialsStore'),
+            null,
+            () => this.getMaterials()
+        );
+      },
+      getMaterialById(material){
+        return _.find(this.materials,function(m){return m['.key'] == material});
+      },
+      getCategoryById(category){
+        return _.find(this.categories,function(c){ return c['.key'] == category });
+      },                                          
       clearForm(){
-        this.materialStore = {};
-         this.$refs.form.reset();
+        this.materialStore = new Object(this.materialStore);
+        this.$refs.form.reset();
       }
   }
 }

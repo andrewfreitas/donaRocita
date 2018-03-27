@@ -43,6 +43,7 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'recipeCategoryRegister',
@@ -70,41 +71,33 @@ export default {
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
       },
-      recipeCategoryEditable:function(recipeCategory){
-        this.recipeCategory = recipeCategory;
+      recipeCategoryEditable:function(id){
+        this.recipeCategory = _.find(this.recipeCategories,function(r){return r['.key'] == id});
       }         
   },
   methods: {
-      actvModal(showModal){
-          this.showModal = showModal;
-      },
       getRecipeCategories(){
-          this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
-      },
+          this.$bindAsArray(
+            'recipeCategories',
+            db.ref('rcita/recipeCategories')
+        );
+      },      
       saveRecipeCategory(){
-        if (!this.recipeCategory.id && this.$refs.form.validate()) {
-          var guid = _guid.create();
-          this.recipeCategory.id =guid;
-          this.recipeCategories.push(_.clone(this.recipeCategory));
-        }else if(this.recipeCategory.id && this.$refs.form.validate()){
+
+        if (!this.recipeCategory['.key']) {
+          this.$firebaseRefs.recipeCategories.push(_.clone(this.recipeCategory));                   
+        }else{
           this.updateRecipeCategory(this.recipeCategory);
         }
-        else{
-          return;
-        }
 
-        this.persistRecipeCategories();
-        this.$parent.$emit('categoryObject', _.clone(this.recipeCategories));
         this.clearForm();
         this.showModal = false;  
 
       },
       updateRecipeCategory(recipeCategory){
-        var indexArray = _.findIndex(this.recipeCategories, function(o) { return o.id == recipeCategory.id; });
-        this.recipeCategories[indexArray] = recipeCategory;
-      },      
-      persistRecipeCategories(){
-        this.$localStorage.set('recipeCategories', JSON.stringify(this.recipeCategories));
+        const copyObj = _.clone(recipeCategory);
+        delete copyObj['.key'];
+        this.$firebaseRefs.recipeCategories.child(recipeCategory['.key']).set(copyObj);
       },       
       clearForm(){
         this.recipeCategory ={};

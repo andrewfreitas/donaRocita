@@ -57,6 +57,7 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'categoryRegister',
@@ -86,7 +87,7 @@ export default {
           this.$parent.$emit('showModal', showModal);
       },
       categoryEditable:function(category){
-        this.category = category;
+        this.category = _.find(this.categories,function(c){ return c['.key'] ==  category['.key']});
       }
   },
   methods: {
@@ -95,39 +96,32 @@ export default {
       },
       saveCategory(){
 
-        if (!this.category.id && this.$refs.form.validate()) {
-          var guid = _guid.create();
-          this.category.id =guid;
-          this.categories.push(_.clone(this.category));
-        }else if(this.category.id && this.$refs.form.validate()){
+        if (!this.category['.key']) {
+          this.$firebaseRefs.categories.push(_.clone(this.category));                   
+        }else{
           this.updateCategory(this.category);
         }
-        else{
-          return;
-        }
 
-        this.persistCategories();
         this.clearForm();
-        this.$parent.$emit('categoryObject', _.clone(this.category));
         this.showModal = false;        
       },
       updateCategory(category){
-        var indexArray = _.findIndex(this.categories, function(o) { return o.id == category.id; });
-        this.categories[indexArray] = category;
-      },
-      persistCategories(){
-        this.$localStorage.set('categories', JSON.stringify(this.categories));
+        const copyObj = _.clone(category);
+        delete copyObj['.key'];
+        this.$firebaseRefs.categories.child(category['.key']).set(copyObj);        
       },
       getCategories(){
-        this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
-      },      
+          this.$bindAsArray(
+            'categories',
+            db.ref('rcita/categories'),
+            null,
+            ()=> this.showLoader = false
+        );
+      },     
       clearForm(){
         this.category = {};
         this.$refs.form.reset();
       }
-  },
-  mounted () {
-      this.getCategories();
   }  
 }
 </script>

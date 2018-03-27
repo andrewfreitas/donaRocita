@@ -38,10 +38,9 @@
                 placeholder="Selecione"
                 :items="categories"
                 item-text="name"
-                item-value="id"
-                return-object
-                v-model="material.category"
-                ref="material.category"
+                item-value=".key"
+                v-model="materialCategory"
+                ref="materialCategory"
                 :rules="fieldRules.materialCategoryRules"
                 required
               ></v-select>
@@ -85,6 +84,7 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'materialsRegister',
@@ -127,50 +127,57 @@ export default {
       },
       materialEditable:function(material){
         this.material = material;
+        this.materialCategory = this.getCategoryById(material.category);
       }      
   },
   mounted(){
-    this.getCategpries();
-    this.getMaterials();
+    this.getCategories();
   },
   methods: {
-      getCategpries(){
-         this.categories = JSON.parse(this.$localStorage.get('categories'));
-      },
+      getMaterials(){
+         this.$bindAsArray(
+           'materials',
+           db.ref('rcita/materials'),
+           null,
+           ()=> this.showLoader = false
+        );
+      },      
+      getCategories(){
+         this.$bindAsArray(
+           'categories',
+           db.ref('rcita/categories'),
+           null,
+           () => this.getMaterials()
+        );
+      }, 
+      getCategoryById(id){
+        return _.find(this.categories,function(c) { return c['.key'] == id});
+      },     
       actvModal(showModal){
           this.showModal = showModal;
       },
       saveMaterial(){
-        if (!this.material.id && this.$refs.form.validate()) {
-          var guid = _guid.create();
-          this.material.id =guid; 
-          this.materials.push(_.clone(this.material));         
-        }else if(this.material.id && this.$refs.form.validate()){
+        
+        this.material.category = this.materialCategory['.key'];
+
+        if (!this.material['.key']) {
+          this.$firebaseRefs.materials.push(_.clone(this.material));                   
+        }else{
           this.updateMaterial(this.material);
         }
-        else {
-          return;
-        }
 
-        this.persistMaterials();
-        this.clearForm();
-        this.$parent.$emit('materialObject');        
+        this.clearForm();        
         this.showModal = false;        
       },
-      persistMaterials(){
-        this.$localStorage.set('materials', JSON.stringify(this.materials));
-      },
       updateMaterial(material){
-        var indexArray = _.findIndex(this.materials, function(o) { return o.id == material.id; });
-        this.materials[indexArray] = material;
+        const copyObj = _.clone(material);
+        delete copyObj['.key'];
+        this.$firebaseRefs.materials.child(material['.key']).set(copyObj);
       },      
       clearForm(){
         this.material = {};
         this.$refs.form.reset();
-      },
-      getMaterials(){
-        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
-      },      
+      }  
   }
 }
 </script>

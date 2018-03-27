@@ -28,6 +28,7 @@
       :items="materials"
       v-bind:search="search"
       class="elevation-1"
+      :loading="showLoader"
       no-data-text="Não há dados cadastrados"
       no-results-text="Dados não encontrados"
       rows-per-page-text="Itens por página"      
@@ -35,7 +36,7 @@
     <template slot="items" slot-scope="props">
         <td class="text-xs-left">{{ props.item.name }}</td>
         <td class="text-xs-left">{{ props.item.description }}</td>
-        <td class="text-xs-left">{{ props.item.category.name }}</td>
+        <td class="text-xs-left">{{ getCategoryById(props.item.category) }}</td>
         <td class="text-xs-right">
           <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
         </td>
@@ -59,6 +60,8 @@
 </template>
 <script>
 import materialsRegister from '@/components/material-register/material-register';
+import {db} from '@/components/shared/data-config/data-config.js';
+
 export default {
   name: 'MaterialList',
   components: {
@@ -78,6 +81,7 @@ data () {
           {text: 'Excluir', value: 'delete' }
         ],
         materials:[],
+        showLoader:true,
         materialsStore:[],
         deleteMaterial:false
       }
@@ -87,7 +91,24 @@ data () {
         this.showMaterialsRegister = true;
       },
       getMaterials(){
-        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+         this.$bindAsArray(
+           'materials',
+           db.ref('rcita/materials'),
+           null,
+           ()=> this.showLoader = false
+        );
+        //this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+      },
+      getCategories(){
+         this.$bindAsArray(
+           'categories',
+           db.ref('rcita/categories'),
+           null,
+           () => this.getMaterials()
+        );
+      },
+      getCategoryById(id){
+        return _.find(this.categories,function(category){ return category['.key'] == id }).name;
       },
       getMaterialsStore(){
         return this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
@@ -97,22 +118,16 @@ data () {
         this.showMaterialsRegister = true;
       },
       removeMaterial(material){
-        if(!this.verifyRelationship(material)){
-          this.materials = _.remove(this.materials, function(item) {
-            return item.id != material.id;
-          });
-
-          this.persistMaterials();
-        }else{
+        if(this.verifyRelationship(material)){
           this.deleteMaterial = true;
+          return;
         }
-      },
-      persistMaterials(){
-        this.$localStorage.set('materials', JSON.stringify(this.materials));
-      },      
+        
+        this.$firebaseRefs.materials.child(material['.key']).remove();
+      },  
       verifyRelationship(material){
         return _.size(_.filter(this.getMaterialsStore(),function(item){
-          return item.materialId == material.id;
+          return item.materialId == material['.key'];
         })) > 0;
       },                  
   },
@@ -120,12 +135,8 @@ data () {
       this.$on('showModal',function (show) {
           this.showMaterialsRegister = show;
       }); 
-
-      this.$on('materialObject',function () {
-        this.getMaterials();    
-      });
       
-      this.getMaterials();
+      this.getCategories();
   },  
 }
 </script>

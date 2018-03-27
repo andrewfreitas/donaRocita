@@ -27,6 +27,7 @@
       v-bind:headers="headers"
       :items="materialsStore"
       v-bind:search="search"
+      :loading="showLoader"
       class="elevation-1"
       no-data-text="Não há dados cadastrados"
       no-results-text="Dados não encontrados"
@@ -34,7 +35,7 @@
     >
     <template slot="items" slot-scope="props">
       <!-- <td class="text-xs-right">{{ props.item.category.name }}</td> -->
-      <td class="text-xs-right">{{ props.item.material.description }}</td>
+      <td class="text-xs-right">{{ getMaterialById(props.item.material).name }}</td>
       <td class="text-xs-right">{{ props.item.unitWeight }}</td>
       <td class="text-xs-right">{{ props.item.quantity }}</td>
       <td class="text-xs-right">{{ props.item.unit.description }}</td>
@@ -59,6 +60,7 @@
 </template>
 <script>
 import materialStoreRegister from '@/components/material-store-register/material-store-register';
+import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'MaterialStoreList',
@@ -83,55 +85,70 @@ data () {
         materialsStore:[],
         recipes:[],
         materialStoreEditable:{},
-        deleteMaterialStore:false
+        deleteMaterialStore:false,
+        showLoader:true
       }
 },
   methods: {
       openModal(){
           this.showMaterialStoreRegister = true;
       },
-      getStore(){
-        this.materialsStore = this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
-      },
       editMaterialStore(materialStore){
-        this.materialStoreEditable = materialStore;
+        this.materialStoreEditable = materialStore['.key'];
         this.showMaterialStoreRegister = true;
       },
       removeMaterialStore(materialStore){
-        if(!this.verifyRelationship(materialStore)){
-          this.materialsStore = _.remove(this.materialsStore, function(item) {
-            return item.id != materialStore.id;
-          });
-
-          this.persistMaterialStore();
-        }else{
+        if(this.verifyRelationship(materialStore)){
           this.deleteMaterialStore = true;
+          return;
         }
+
+        this.$firebaseRefs.materialsStore.child(materialStore['.key']).remove();
       },
       verifyRelationship(material){
         return _.size(_.filter(this.getRecipes(),function(recipe){
           return _.filter(recipe.items,function(item){
-            return item.material.id == material.id;
+            return item.material['.key'] == material.id;
           });
         })) > 0;
       },
-      persistMaterialStore(){
-        this.$localStorage.set('materialStore', JSON.stringify(this.materialsStore));
-      },
       getRecipes(){
         return this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
-      }             
+      },
+      getCategories(){
+          this.$bindAsArray(
+            'categories',
+            db.ref('rcita/categories'),
+            null,
+            () => this.getMaterials()
+        );
+      },
+      getMaterials(){
+         this.$bindAsArray(
+           'materials',
+           db.ref('rcita/materials'),
+           null,
+           () => this.getMaterialsStore()
+        );
+      },
+      getMaterialsStore(){
+          this.$bindAsArray(
+            'materialsStore',
+            db.ref('rcita/materialsStore'),
+            null,
+            ()=>this.showLoader = false
+        );
+      },
+      getMaterialById(material){
+        return _.find(this.materials,function(m){return m['.key'] == material});
+      }                    
   },
     mounted () {
       this.$on('showModal',function (show) {
           this.showMaterialStoreRegister = show;
       }); 
-
-      this.$on('materialStoreObject',function () {
-        this.getStore();
-      });
       
-      this.getStore();
+      this.getCategories();
   },  
 }
 </script>

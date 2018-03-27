@@ -69,6 +69,7 @@
 <script>
 // import pdfPrinter from '@/components/shared/pdf-print';
 import _ from 'lodash';
+import {db} from '@/components/shared/data-config/data-config.js';
 // import _guid from 'Guid';
 
 export default {

@@ -27,6 +27,9 @@
   </body>
 </template>
 <script>
+
+import {db} from '@/components/shared/data-config/data-config.js';
+
     export default {
         name: 'recipePrintView',
         data () {
@@ -37,35 +40,52 @@
             }
         },        
         created(){
-            this.getRecipes();
+            this.getRecipeCategories();
         },
-        mounted () {
-
-            this.$parent.$parent.$parent.$emit('hideDrawer');                  
-        },
-        methods: {
+        methods: {                    
+            getRecipeCategories(){
+                this.$bindAsArray(
+                  'recipeCategories',
+                  db.ref('rcita/recipeCategories'),
+                  null,
+                  () => this.getRecipes()
+              );
+            },
             getRecipes(){
-                this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
-                this.getCategories();
+                this.$bindAsArray(
+                  'recipes',
+                  db.ref('rcita/recipes'),
+                  null,
+                  ()=> this.getCategoriesX()
+              );
+            },          
+            getCategoriesX(){
+
+                 var categories = _.filter(this.recipeCategories, (f) => { 
+                    return _.find(
+                           _.sortedUniqBy(
+                            _.map(this.recipes,function(item){ 
+                              return item.recipeCategory}
+                            )
+                          ),(x) => x == f['.key'])});
+
+                 this.getRecipeCategoriesX(categories);
             },
-            getCategories(){
-                this.recipeCategories = _.sortedUniqBy(_.map(this.recipes,function(item){ return item.recipeCategory}),'id');
-                this.getRecipeCategories(this.recipeCategories);
-            },
-            getRecipeCategories(recipeCategories){
+            getRecipeCategoriesX(recipeCategories){
                 var thisRecipes =  this.recipes;
                 var rArray =  this.recipesArray;
 
-                _.each(recipeCategories,function(item){
+                _.each(recipeCategories,function(category){
                      var recipe = {
-                            categoryId:item.id,
-                            categoryName:item.name,
-                            categoryRecipes:_.filter(thisRecipes,function(itemRecipe){ return itemRecipe.recipeCategory.id ==item.id })
+                            categoryId:category.id,
+                            categoryName:category.name,
+                            categoryRecipes:_.filter(thisRecipes,function(itemRecipe){ return itemRecipe.recipeCategory ==category['.key'] })
                         }
                     rArray.push(recipe);
                 });
 
                 this.recipesArray = rArray;
+                this.$parent.$parent.$parent.$emit('hideDrawer');
             }        
         }               
     }

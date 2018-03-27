@@ -4,7 +4,7 @@
     <v-toolbar color="blue-grey darken-2" dark>
     <v-toolbar-title class="white--text">
       <v-icon dark>gesture</v-icon>
-      Inclusão de Receita</v-toolbar-title>
+      {{recipeAction}} de Receita {{e1 > 1 ? ' - ' + recipe.name : ''}}</v-toolbar-title>
     </v-toolbar>
     <v-spacer></v-spacer>
     <v-stepper v-model="e1" dark class="mt-2">
@@ -36,10 +36,9 @@
                   placeholder="Selecione"
                   :items="recipeCategories"
                   item-text="name"
-                  item-value="id"
                   return-object
-                  v-model="recipe.recipeCategory"
-                  ref="recipe.recipeCategory"
+                  v-model="recipeCategory"
+                  ref="recipeCategory"
                   :rules ="fieldRules.recipeCategoryRules"
                   required>
                 </v-select>
@@ -135,12 +134,12 @@
                   no-data-text = "Nenhum material foi adicionado a receita."
                 >
                 <template slot="items" slot-scope="props"> 
-                  <td class="text-xs-right">{{ props.item.material.name }}</td>
+                  <td class="text-xs-right">{{ getMaterialById(props.item.material).name }}</td>
                   <td class="text-xs-right">{{ props.item.quantity }}</td>
                   <td class="text-xs-right">{{ props.item.unit.description }}</td>
                   <td class="text-xs-right">{{ props.item.cost }}</td>
                   <td class="text-xs-right">
-                    <v-btn fab dark  small color="red" @click="removeMaterial(props.item.id)">
+                    <v-btn fab dark  small color="red" @click="removeMaterial(props.item.material)">
                       <v-icon dark>remove</v-icon>
                     </v-btn>                  
                   </td>
@@ -175,7 +174,7 @@
                 </v-tooltip>
               </template>              
               <template slot="items" slot-scope="props"> 
-                <td class="text-xs-right">{{ props.item.material.name }}</td>
+                <td class="text-xs-right">{{ getMaterialById(props.item.material).name }}</td>
                 <td class="text-xs-right">{{ props.item.quantity }}</td>
                 <td class="text-xs-right">{{ props.item.unit.description }}</td>
                 <td class="text-xs-right">{{ props.item.cost }}</td>
@@ -260,7 +259,7 @@
                   label="Custo Receita"
                   v-model="summaryCost"
                   ref="recipeTotalCost"
-                  readonly="true"
+                  :readonly=true
                   disabled                
                   box >
                 </v-text-field>
@@ -322,6 +321,7 @@
 import _ from 'lodash';
 import _guid from 'Guid';
 import conversionEngine from '@/components/conversion-engine/conversion-engine';
+import {db} from '@/components/shared/data-config/data-config.js';
 import numeral from 'numeral';
 import {VMoney} from 'v-money';
 
@@ -331,8 +331,6 @@ export default {
   mixins:[conversionEngine],
   data () {    
     return {
-    price: 123.45,
-    ex3: { label: 'thumb-color', val: 50, color: 'red' },
     showSnackbar:false,
     snackBarText:'',
     validStep1:false,
@@ -392,7 +390,10 @@ export default {
       materialsStore:[],
       availableMaterials:[],
       valid:true,          
-      showModal: false     
+      showModal: false,
+      recipeCategory:{},
+      recipeAction:'Inclusão',
+      recipeEdit:false     
     }
   },
   computed: {
@@ -436,25 +437,31 @@ export default {
       this.recipe.totalCostFormatted = numeral(this.recipe.totalCost).format('$ 0,0.00');
 
       return numeral(this.recipe.totalCost).format(' 0,0.00');
-    }
+    },
+
   },
   watch: {
       adctionalCosts: function(){
         this.recipe.adctionalPrice = this.adctionalCosts == false ? 0.00 : this.recipe.adctionalPrice;
-        this.recipe.adctionalPriceFormatted = numeral(this.recipe.adctionalPrice).format('$ 0,0.00');
+      },
+      'recipe.adctionalPrice':function(){
+          this.recipe.adctionalPriceFormatted = numeral(this.recipe.adctionalPrice).format('$ 0,0.00');
       },
       'recipeItem.category': function(category){
           if(category){
             this.availableMaterials = _.filter(this.materials,function(material){ 
-              return material.category.id == category.id;
+              return material.category == category['.key'];
             }); 
           };
       },         
       'recipeItem.material': function(material){
-        this.items = material.unities || null;
+        if(material){
+          this.items = material.unities || null;
+        }
       },
       showRecipeRegister: function(show){
           this.showModal = show;
+          this.recipeEdit = show;
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal,'showRecipeRegister');
@@ -463,88 +470,124 @@ export default {
           this.clearForm();
       },
       recipeEditable:function(recipe){
-        this.recipe = recipe;
+        this.recipeEdit = recipe;
+        this.recipe = _.find(this.recipes,function(r){return r['.key'] == recipe});
+        this.recipeCategory = this.getRecipeCategoryById(this.recipe.recipeCategory);
+        this.recipeAction = 'Alteração';
       }      
   },
-  methods: {
-      actvModal(showModal){
-          this.showModal = showModal;
-      },
-      getRecipes(){
-        this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
-      },
-      getMaterialStore(){
-        this.materialsStore = this.$localStorage.get('materialStore')? JSON.parse(this.$localStorage.get('materialStore')) : this.materialsStore;
-      },            
+  methods: { 
       addItemRecipe(){
         if (this.$refs.form.validate()) {
-          var guid = _guid.create();
-          this.recipeItem.id = guid.value;
 
-          if(this.blockMaterialStoreItems(this.recipeItem) > 0){
-            this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem)).format('$ 0,0.00');
-          }else{
+          if(this.blockMaterialStoreItems(this.recipeItem)){
             this.showSnackbar = true;
             this.snackBarText = 'Não há estoque para o material selecionado!'; 
-            return;           
-          }
+            return;
+          };
           
-
-          if(this.blockAddedRecipeItems(this.recipeItem) == 0){
-            this.recipe.items.push(_.clone(this.recipeItem));
-          }
-          else{
+          if(this.blockAddedRecipeItems(this.recipeItem)){
             this.showSnackbar = true;
             this.snackBarText = 'Produto adicionado anteriormente!';
             return;
-          }
-                     
-          this.clearForm();
+          };
+
+          this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem,this.materialsStore)).format('$ 0,0.00');
+          this.recipeItem.category = this.recipeItem.category['.key'];
+          this.recipeItem.material = this.recipeItem.material['.key']; 
+          this.recipe.items.push(_.clone(this.recipeItem));                     
+          this.clearFormItem();
         }
       },
       blockMaterialStoreItems(recipeItem){
         return _.filter(this.materialsStore, function(item){ 
-          return item.material.id == recipeItem.material.id
-          }).length;        
+          return item.material == recipeItem.material['.key']
+          }).length == 0;        
       },
       blockAddedRecipeItems(recipeItem){
         return _.filter(this.recipe.items, function(item){ 
-          return item.material.id == recipeItem.material.id
-          }).length;
+          return item.material['.key'] == recipeItem.material['.key']
+          }).length > 0;
       },
       getCategories(){
-        this.categories = this.$localStorage.get('categories')? JSON.parse(this.$localStorage.get('categories')) : this.categories;
+          this.$bindAsArray(
+            'categories',
+            db.ref('rcita/categories'),
+            null,
+            () => this.getMaterials()
+        );
       },
-      getRecipeCategories(){
-        this.recipeCategories = this.$localStorage.get('recipeCategories')? JSON.parse(this.$localStorage.get('recipeCategories')) : this.recipeCategories;
-      },      
       getMaterials(){
-        this.materials = this.$localStorage.get('materials')? JSON.parse(this.$localStorage.get('materials')) : this.materials;
+          this.$bindAsArray(
+            'materials',
+            db.ref('rcita/materials'),
+            null,
+            ()=> this.getMaterialStore()
+        );
       },
+      getMaterialStore(){
+          this.$bindAsArray(
+            'materialsStore',
+            db.ref('rcita/materialsStore'),
+            null,
+            ()=> this.getRecipeCategories()
+        );
+      },                     
+      getRecipeCategories(){
+          this.$bindAsArray(
+            'recipeCategories',
+            db.ref('rcita/recipeCategories'),
+            null,
+            () => this.getRecipes()
+        );
+      },
+      getRecipes(){
+          this.$bindAsArray(
+            'recipes',
+            db.ref('rcita/recipes')
+        );
+      },
+      getMaterialById(id){
+        return _.find(this.materials,function(m){ return m['.key'] ==  id});
+      },
+      getRecipeCategoryById(id){
+        return _.find(this.recipeCategories,function(rC){ return rC['.key'] == id});
+      },               
       removeMaterial(recipeItemId){
         this.recipe.items = _.remove(this.recipe.items, function(item) {
-          return item.id != recipeItemId;
+          return item.material != recipeItemId;
         })
       },
       saveRecipe(){
-        var guid = _guid.create();
-        this.recipe.id = guid.value;
-        this.recipes.push(_.clone(this.recipe));
-        this.$localStorage.set('recipes', JSON.stringify(this.recipes));
-        this.$parent.$emit('recipeObject', _.clone(this.recipe));
+
+        this.recipe.recipeCategory = this.recipeCategory['.key'];
+
+        if(!this.recipe['.key']){  
+          this.$firebaseRefs.recipes.push(_.clone(this.recipe));  
+        }else{
+          this.updateRecipe(this.recipe);
+        }
+  
         this.showModal = false;
         this.clearForm();
       },
+      updateRecipe(recipe){
+        const copyObj = _.clone(recipe);
+        delete copyObj['.key'];
+        this.$firebaseRefs.recipes.child(recipe['.key']).set(copyObj);
+      },         
       clearForm(){
         this.$refs.form.reset();
         this.$refs.step1.reset();
+        this.validStep1 = false;
+      },
+      clearFormItem(){
+        this.$refs.form.reset();
       }
   },
   mounted () {
     this.getCategories();
-    this.getRecipeCategories();
-    this.getMaterials();
-    this.getMaterialStore();
+    this.recipe.qtdRecipe = 1.00;
   },
   beforeCreate () {
     numeral.register('locale', 'pt-BR', {

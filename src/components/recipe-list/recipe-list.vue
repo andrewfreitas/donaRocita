@@ -26,12 +26,13 @@
   <v-data-table
       v-bind:headers="headers"
       :items="recipes"
+      :loading="showLoader"
       v-bind:search="search"
       class="elevation-1"
     >
     <template slot="items" slot-scope="props">
       <td class="text-xs-left">{{ props.item.name }}</td>
-      <td class="text-xs-left">{{ props.item.recipeCategory.name }}</td>
+      <td class="text-xs-left">{{ getRecipeCategoryById(props.item.recipeCategory).name }}</td>
       <td class="text-xs-right">{{ props.item.cost }}</td>
       <td class="text-xs-right">{{ props.item.adctionalPriceFormatted }}</td>
       <td class="text-xs-right">{{ props.item.totalCostFormatted }}</td>
@@ -50,13 +51,15 @@
       </v-card>
     </v-flex>
   </v-layout>
-  <recipe-register :show-recipe-register.sync="showRecipeRegister" :recipe-editable="recipeEditable"></recipe-register>
+  <recipe-register :show-recipe-register.sync="showRecipeRegister" :recipe-editable.sync="recipeEditable"></recipe-register>
   <recipe-print :show-recipe-print.sync="showRecipePrint"></recipe-print> 
 </div>
 </template>
 <script>
 import recipeRegister from '@/components/recipe-register/recipe-register';
 import recipePrint from '@/components/recipe-print/recipe-print';
+import {db} from '@/components/shared/data-config/data-config.js';
+import logAction from '@/components/shared/action-log/action-log';
 
 export default {
   name: 'RecipeList',
@@ -64,6 +67,7 @@ export default {
       recipeRegister,
       recipePrint
   },
+  mixins: [logAction],
 data () {
       return {
           showRecipeRegister: false,
@@ -80,40 +84,70 @@ data () {
         ],
         recipes:[],
         recipeEditable:{},
+        showLoader:true,
       }
 },
   methods: {
       openModal(modalItem){
         this[modalItem] = true;
       },
-      getRecipes(){
-        this.recipes = this.$localStorage.get('recipes')? JSON.parse(this.$localStorage.get('recipes')) : this.recipes;
-      },
       editRecipe(recipe, modalItem){
-        this.recipeEditable = recipe;
+        this.recipeEditable = recipe['.key'];
         this[modalItem] = true;
       },
-      removeRecipe(recipe){
-        this.recipes = _.remove(this.recipes, function(item) {
-          return item.id != recipe.id;
-        });
-
-        this.persistRecipes();
+      getCategories(){
+          this.$bindAsArray(
+            'categories',
+            db.ref('rcita/categories'),
+            null,
+            () => this.getMaterials()
+        );
       },
-      persistRecipes(){
-        this.$localStorage.set('recipes', JSON.stringify(this.recipes));
-      }
+      getMaterials(){
+          this.$bindAsArray(
+            'materials',
+            db.ref('rcita/materials'),
+            null,
+            ()=> this.getMaterialStore()
+        );
+      },
+      getMaterialStore(){
+          this.$bindAsArray(
+            'materialsStore',
+            db.ref('rcita/materialsStore'),
+            null,
+            ()=> this.getRecipeCategories()
+        );
+      },                     
+      getRecipeCategories(){
+          this.$bindAsArray(
+            'recipeCategories',
+            db.ref('rcita/recipeCategories'),
+            null,
+            () => this.getRecipes()
+        );
+      },
+      getRecipes(){
+          this.$bindAsArray(
+            'recipes',
+            db.ref('rcita/recipes'),
+            null,
+            ()=> this.showLoader= false
+        );
+      },
+      getRecipeCategoryById(id){
+        return _.find(this.recipeCategories,function(r){return r['.key'] == id});
+      },       
+      removeRecipe(recipe){
+        this.$firebaseRefs.recipes.child(recipe['.key']).remove();
+      },
   },
     mounted () {
       this.$on('showModal',function (show,modalName) {
           this[modalName] = show;
       }); 
-
-      this.$on('recipeObject',function (recipeObject) {
-          this.getRecipes();
-      });
       
-      this.getRecipes();
+      this.getCategories();
   },  
 }
 </script>
