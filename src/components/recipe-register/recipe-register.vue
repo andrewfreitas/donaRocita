@@ -137,7 +137,7 @@
                   <td class="text-xs-right">{{ getMaterialById(props.item.material).name }}</td>
                   <td class="text-xs-right">{{ props.item.quantity }}</td>
                   <td class="text-xs-right">{{ props.item.unit.description }}</td>
-                  <td class="text-xs-right">{{ props.item.cost }}</td>
+                  <td class="text-xs-right">{{ getRecipeItemCost(props.item) }}</td>
                   <td class="text-xs-right">
                     <v-btn fab dark  small color="red" @click="removeMaterial(props.item.material)">
                       <v-icon dark>remove</v-icon>
@@ -177,7 +177,7 @@
                 <td class="text-xs-right">{{ getMaterialById(props.item.material).name }}</td>
                 <td class="text-xs-right">{{ props.item.quantity }}</td>
                 <td class="text-xs-right">{{ props.item.unit.description }}</td>
-                <td class="text-xs-right">{{ props.item.cost }}</td>
+                <td class="text-xs-right">{{ getRecipeItemCost(props.item) }}</td>
               </template>
               <template slot="footer">              
                 <td colspan="3" class="text-xs-right">
@@ -202,7 +202,7 @@
             <v-card-text>
             <v-layout row wrap>
               <v-flex xs12 sm4>
-                <v-radio-group v-model="profitType" :mandatory="true" row>
+                <v-radio-group v-model="recipe.profitType" :mandatory="true" row>
                   <v-radio label="Valor" value="valuePrice" color="green"></v-radio>
                   <v-radio label="Percentual" value="percentPrice" color="green"></v-radio>
                 </v-radio-group>
@@ -215,7 +215,7 @@
                   prefix="R$"
                   v-model="recipe.priceProfit"
                   ref="recipe.priceProfit"
-                  v-show="profitType=='valuePrice'">
+                  v-show="recipe.profitType=='valuePrice'">
                 </v-text-field>
                 <money style="display:none" v-model="recipe.priceProfit" v-bind="money"></money>
                 <v-text-field
@@ -224,7 +224,7 @@
                   suffix="%"
                   v-model="recipe.percentProfit"
                   ref="recipe.percentProfit"
-                  v-show="profitType!='valuePrice'">
+                  v-show="recipe.profitType!='valuePrice'">
                 </v-text-field>
                 <money style="display:none" v-model="recipe.percentProfit" v-bind="money"></money>             
               </v-flex>           
@@ -258,7 +258,7 @@
                 <v-text-field
                   label="Custo Receita"
                   v-model="summaryCost"
-                  ref="recipeTotalCost"
+                  ref="summaryCost"
                   :readonly=true
                   disabled                
                   box >
@@ -270,7 +270,7 @@
                 <v-text-field
                   label="Valor Total por Item"
                   v-model="unitPrice"
-                  ref="recipeTotalCost"
+                  ref="unitPrice"
                   readonly="true"
                   disabled                
                   box >
@@ -282,7 +282,6 @@
                 <v-text-field
                   label="Valor total da Receita"
                   required
-                  prefix="R$"
                   v-model="recipeTotalCost"
                   ref="recipeTotalCost"
                   disabled                
@@ -320,15 +319,16 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
-import conversionEngine from '@/components/conversion-engine/conversion-engine';
+import recipeData from '@/components/recipe/shared/recipe-data/recipe-data';
+//import conversionEngine from '@/components/conversion-engine/conversion-engine';
 import {db} from '@/components/shared/data-config/data-config.js';
-import numeral from 'numeral';
+//import numeral from 'numeral';
 import {VMoney} from 'v-money';
 
 export default {
   name: 'recipeRegister',
   props: ['showRecipeRegister','recipeEditable'],
-  mixins:[conversionEngine],
+  mixins:[recipeData],
   data () {    
     return {
     showSnackbar:false,
@@ -348,7 +348,6 @@ export default {
     },    
       adctionalCosts:false, 
       e1: 0,
-      profitType:'valuePrice',
       items:[],
       recipeCategories:[],
       recipeItem:{},
@@ -363,7 +362,8 @@ export default {
       recipe:{
         name:'',
         description:'',
-        items:[]
+        items:[],
+        profitType:'valuePrice'
       },
       headers: [
         {
@@ -398,54 +398,24 @@ export default {
   },
   computed: {
     summaryCost: function(){
-      
-      var totalCost = 0.00;
-
-      _.forEach(this.recipe.items, function(item){
-        totalCost += numeral(item.cost)._value;
-      });
-
-      this.recipe.cost = numeral(totalCost).format('$ 0,0.00');
-
-      return numeral(totalCost).format('$ 0,0.00');
+      return this.getSummaryCost(this.recipe);
     },
     recipeProfitPrice: function(){
-      if(this.profitType != 'valuePrice'){
-        return numeral(this.summaryCost)._value * (numeral(this.recipe.percentProfit)._value / 100);
-      }
-
-      return numeral(this.recipe.priceProfit)._value;
+      this.getRecipeProfitPrice(this.recipe);
     },
     unitPrice: function(){
-
-      var unitPrice = 0;
-
-      if(numeral(this.recipe.qtdRecipe)._value >= 1){
-        unitPrice =  numeral(this.recipeTotalCost)._value / numeral(this.recipe.qtdRecipe)._value;
-      }
-
-      this.recipe.unitPriceRecipe = unitPrice; 
-      this.recipe.unitPriceRecipeFormatted = numeral(unitPrice).format('$ 0,0.00'); 
-
-      return numeral(unitPrice).format('$ 0,0.00');
+      return this.getUnitPrice(this.recipe);
     },
     recipeTotalCost: function(){
-      this.recipe.totalCost = numeral(this.summaryCost)._value +
-                              numeral(this.recipeProfitPrice)._value + 
-                              numeral(this.recipe.adctionalPrice || 0)._value;
-      
-      this.recipe.totalCostFormatted = numeral(this.recipe.totalCost).format('$ 0,0.00');
-
-      return numeral(this.recipe.totalCost).format(' 0,0.00');
-    },
-
+      return this.getTotalCost(this.recipe);
+    }
   },
   watch: {
       adctionalCosts: function(){
         this.recipe.adctionalPrice = this.adctionalCosts == false ? 0.00 : this.recipe.adctionalPrice;
       },
       'recipe.adctionalPrice':function(){
-          this.recipe.adctionalPriceFormatted = numeral(this.recipe.adctionalPrice).format('$ 0,0.00');
+          this.recipe.adctionalPriceFormatted = this.formatPrice(this.recipe.adctionalPrice);
       },
       'recipeItem.category': function(category){
           if(category){
@@ -479,12 +449,6 @@ export default {
   methods: { 
       addItemRecipe(){
         if (this.$refs.form.validate()) {
-
-          if(this.blockMaterialStoreItems(this.recipeItem)){
-            this.showSnackbar = true;
-            this.snackBarText = 'Não há estoque para o material selecionado!'; 
-            return;
-          };
           
           if(this.blockAddedRecipeItems(this.recipeItem)){
             this.showSnackbar = true;
@@ -492,21 +456,16 @@ export default {
             return;
           };
 
-          this.recipeItem.cost = numeral(this.convertNumber(this.recipeItem,this.materialsStore)).format('$ 0,0.00');
           this.recipeItem.category = this.recipeItem.category['.key'];
-          this.recipeItem.material = this.recipeItem.material['.key']; 
+          this.recipeItem.material = this.recipeItem.material['.key'];
+          this.recipeItem.price = this.getMaterialById(this.recipeItem.material).price;
           this.recipe.items.push(_.clone(this.recipeItem));                     
           this.clearFormItem();
         }
       },
-      blockMaterialStoreItems(recipeItem){
-        return _.filter(this.materialsStore, function(item){ 
-          return item.material == recipeItem.material['.key']
-          }).length == 0;        
-      },
       blockAddedRecipeItems(recipeItem){
         return _.filter(this.recipe.items, function(item){ 
-          return item.material['.key'] == recipeItem.material['.key']
+          return item.material == recipeItem.material['.key']
           }).length > 0;
       },
       getCategories(){
@@ -522,17 +481,17 @@ export default {
             'materials',
             db.ref('rcita/materials'),
             null,
-            ()=> this.getMaterialStore()
-        );
-      },
-      getMaterialStore(){
-          this.$bindAsArray(
-            'materialsStore',
-            db.ref('rcita/materialsStore'),
-            null,
             ()=> this.getRecipeCategories()
         );
-      },                     
+      },
+      // getMaterialStore(){
+      //     this.$bindAsArray(
+      //       'materialsStore',
+      //       db.ref('rcita/materialsStore'),
+      //       null,
+      //       ()=> this.getRecipeCategories()
+      //   );
+      // },                     
       getRecipeCategories(){
           this.$bindAsArray(
             'recipeCategories',
@@ -588,27 +547,6 @@ export default {
   mounted () {
     this.getCategories();
     this.recipe.qtdRecipe = 1.00;
-  },
-  beforeCreate () {
-    numeral.register('locale', 'pt-BR', {
-        delimiters: {
-            thousands: '.',
-            decimal: ','
-        },
-        abbreviations: {
-            thousand: 'mil',
-            million: 'milhões',
-            billion: 'b',
-            trillion: 't'
-        },
-        ordinal: function (number) {
-            return 'º';
-        },
-        currency: {
-            symbol: 'R$'
-        }
-    });
-    numeral.locale('pt-BR');
   }
 }
 </script>

@@ -6,17 +6,13 @@ import numeral from 'numeral';
 
 export default {
   methods:{
-    convertNumber(item,materialsStore){
-      var ItemStorage = this.getItemStorage(item,materialsStore);
-      return this.getMaterialCosts(ItemStorage,item);
+    convertNumber(item,material,updateMaterialPrice){
+      return this.getMaterialCosts(item,material,updateMaterialPrice);
     },     
-    getItemStorage(item,materialsStore){
-      return _.find(materialsStore,function(mStorage){ return mStorage.material == item.material['.key']});
-    },
-    getMaterialCosts(itemStorage,item){
-      var totalQuantity = itemStorage.quantity * itemStorage.unitWeight;
-      var minimumCovert = convertUnit(totalQuantity).from(itemStorage.unit.type).to(item.unit.type);
-      var cost = numeral((numeral(itemStorage.price)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
+    getMaterialCosts(item,material,updateMaterialPrice){
+      var minimumCovert = convertUnit(1).from(material.unitPrice.type).to(item.unit.type);
+      var materialPrice = (updateMaterialPrice && updateMaterialPrice == true) ? material.price : item.price;
+      var cost = numeral((numeral(materialPrice)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
     
       return cost;
     }

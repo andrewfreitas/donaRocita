@@ -61,6 +61,35 @@
                     required
                   ></v-select>
             </v-flex>
+              <v-flex xs12 sm4>
+                <v-text-field
+                  label="Preço Unitário"
+                  required
+                  prefix="R$"
+                  v-model="material.price"
+                  ref="material.price"
+                  persistent-hint="true"
+                  hint="Preço Unitário do produto">
+                </v-text-field>               
+                <money style="display:none" v-model="material.price" v-bind="money"></money>    
+              </v-flex>
+              <v-spacer></v-spacer>
+              <v-flex xs12 sm7>              
+                  <v-select
+                    label="Preço por "
+                    placeholder="Selecione"
+                    :items="priceUnities"
+                    item-text="description"
+                    item-value="description"
+                    return-object
+                    v-model="material.unitPrice"
+                    ref="material.unitPrice"
+                    :rules="fieldRules.materialUnitPriceRules"
+                    hint="Unidade de medida relacionada ao preço unitário"
+                    persistent-hint="true"
+                    required
+                  ></v-select>
+              </v-flex>                                          
             </v-layout>
           </v-card-text>
           <v-divider></v-divider>
@@ -84,13 +113,22 @@
 
 import _ from 'lodash';
 import _guid from 'Guid';
+import numeral from 'numeral';
 import {db} from '@/components/shared/data-config/data-config.js';
+import {VMoney} from 'v-money';
 
 export default {
   name: 'materialsRegister',
   props: ['showMaterialsRegister','materialEditable'],
   data () {
     return {
+      row:1,
+      money: {
+        decimal: ',',
+        thousands: '.',
+        precision: 2,
+        masked: true /* doesn't work with directive */
+      },      
       material:{},
       valid:true,
       categories:[],
@@ -106,14 +144,22 @@ export default {
         ],          
         unitMaterialRules:[
           (v) => v.length > 0 || 'Selecione ao menos uma Unidade de medida'
-        ]          
+        ],
+        materialUnitPriceRules:[
+          (v) => !!v || 'Selecione a Unid. Medida referente ao Preço Unitário'
+        ],                   
       },                    
       showModal: false,
-      items: [{description:'Gramas',type:'g'},
-              {description:'Miligramas',type:'mg'},
-              {description:'Quilogramas',type:'kg'},
-              {description:'Litros',type:'l'},
-              {description:'Mililitros',type:'ml'}],      
+      items: [{description:'Gramas',type:'g', ref:'mg'},
+              {description:'Miligramas',type:'mg', ref:'mg'},
+              {description:'Quilogramas',type:'kg', ref:'mg'},
+              {description:'Litros',type:'l', ref:'ml'},
+              {description:'Mililitros',type:'ml', ref:'ml'}], 
+      priceUnities: [{description:'Grama',type:'g', ref:'mg'},
+              {description:'Miligrama',type:'mg', ref:'mg'},
+              {description:'Quilograma',type:'kg', ref:'mg'},
+              {description:'Litro',type:'l', ref:'ml'},
+              {description:'Mililitro',type:'ml', ref:'ml'}],                    
     }
   },
   watch: {
@@ -159,6 +205,7 @@ export default {
       saveMaterial(){
         
         this.material.category = this.materialCategory['.key'];
+        this.material.formattedPrice =  numeral(numeral(this.material.price)._value).format('$ 0,0.00');
 
         if (!this.material['.key']) {
           this.$firebaseRefs.materials.push(_.clone(this.material));                   
@@ -178,7 +225,28 @@ export default {
         this.material = {};
         this.$refs.form.reset();
       }  
-  }
+  },
+  beforeCreate () {
+    numeral.register('locale', 'pt-BR', {
+        delimiters: {
+            thousands: '.',
+            decimal: ','
+        },
+        abbreviations: {
+            thousand: 'mil',
+            million: 'milhões',
+            billion: 'b',
+            trillion: 't'
+        },
+        ordinal: function (number) {
+            return 'º';
+        },
+        currency: {
+            symbol: 'R$'
+        }
+    });
+    numeral.locale('pt-BR');
+  }  
 }
 </script>
 

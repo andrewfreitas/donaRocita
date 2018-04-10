@@ -25,14 +25,14 @@
             <v-list-tile-title>Materiais</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile href="#/material-store-list" router>
+        <!-- <v-list-tile href="#/material-store-list" router>
           <v-list-tile-action>
             <v-icon>line_weight</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>Estoque de Materiais</v-list-tile-title>
           </v-list-tile-content>
-        </v-list-tile>
+        </v-list-tile> -->
         <v-list-tile href="#/recipe-category-list" router>
           <v-list-tile-action>
             <v-icon>grain</v-icon>

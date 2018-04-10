@@ -37,6 +37,7 @@
         <td class="text-xs-left">{{ props.item.name }}</td>
         <td class="text-xs-left">{{ props.item.description }}</td>
         <td class="text-xs-left">{{ getCategoryById(props.item.category) }}</td>
+        <td class="text-xs-left">{{ props.item.formattedPrice }}</td>
         <td class="text-xs-right">
           <v-chip x-small v-for="item in props.item.unities" v-bind:key="item.description">{{ item.description }}</v-chip>
         </td>
@@ -76,6 +77,7 @@ data () {
           {text: 'Nome do Material',value: 'name', align: 'left'},
           {text: 'Descrição do Material', value: 'description' , align: 'left'},
           {text: 'Categoria', value: 'category' , align: 'left'},
+          {text: 'Preço Unit.', value: 'category' , align: 'left'},
           {text: 'Unid. Medida', value: 'unit' , align: 'center'},
           {text: 'Editar', value: 'edit' },
           {text: 'Excluir', value: 'delete' }

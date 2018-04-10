@@ -10,9 +10,18 @@
               <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipeRegister')">
                 <v-icon dark>add</v-icon>
               </v-btn>
-              <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipePrint')">
-                <v-icon dark>print</v-icon>
-              </v-btn>                                
+              <v-tooltip top>
+                <v-btn fab dark small color="amber darken-4" @click="openModal('showRecipePrint')" slot="activator">
+                  <v-icon dark>print</v-icon>
+                </v-btn>
+                <span>Imprimir Receitas</span>
+              </v-tooltip>              
+              <v-tooltip top>
+                <v-btn fab dark small color="amber darken-4" @click="updateRecipes()" slot="activator">
+                  <v-icon dark>cached</v-icon>
+                </v-btn> 
+                <span>Atualizar valores</span>
+              </v-tooltip>                                              
           </v-toolbar-title>
           <v-spacer></v-spacer>
                 <v-text-field
@@ -32,20 +41,21 @@
     >
     <template slot="items" slot-scope="props">
       <td class="text-xs-left">{{ props.item.name }}</td>
-      <td class="text-xs-left">{{ getRecipeCategoryById(props.item.recipeCategory).name }}</td>
-      <td class="text-xs-right">{{ props.item.cost }}</td>
+      <!-- <td class="text-xs-left">{{ getRecipeCategoryById(props.item.recipeCategory).name }}</td> -->
+      <td class="text-xs-right">{{ props.item.formattedCost }}</td>
+      <td class="text-xs-right">{{ props.item.priceProfitFormatted }}</td>
       <td class="text-xs-right">{{ props.item.adctionalPriceFormatted }}</td>
       <td class="text-xs-right">{{ props.item.totalCostFormatted }}</td>
-              <td class="text-xs-right">
-                <v-btn fab dark  small color="green" @click="editRecipe(props.item,'showRecipeRegister')">
-                  <v-icon dark>mode_edit</v-icon>
-                </v-btn>                  
-              </td>                 
-              <td class="text-xs-right">
-                <v-btn fab dark  small color="red" @click="removeRecipe(props.item)">
-                  <v-icon dark>remove</v-icon>
-                </v-btn>                  
-              </td>       
+      <td class="text-xs-right">
+        <v-btn fab dark  small color="green" @click="editRecipe(props.item,'showRecipeRegister')">
+          <v-icon dark>mode_edit</v-icon>
+        </v-btn>                  
+      </td>                 
+      <td class="text-xs-right">
+        <v-btn fab dark  small color="red" @click="removeRecipe(props.item)">
+          <v-icon dark>remove</v-icon>
+        </v-btn>                  
+      </td>       
     </template>   
   </v-data-table>
       </v-card>
@@ -60,6 +70,7 @@ import recipeRegister from '@/components/recipe-register/recipe-register';
 import recipePrint from '@/components/recipe-print/recipe-print';
 import {db} from '@/components/shared/data-config/data-config.js';
 import logAction from '@/components/shared/action-log/action-log';
+import recipeData from '@/components/recipe/shared/recipe-data/recipe-data';
 
 export default {
   name: 'RecipeList',
@@ -67,7 +78,7 @@ export default {
       recipeRegister,
       recipePrint
   },
-  mixins: [logAction],
+  mixins: [logAction,recipeData],
 data () {
       return {
           showRecipeRegister: false,
@@ -75,10 +86,11 @@ data () {
           search: '',
         headers: [
           {text: 'Nome da Receita', value: 'name', align: 'left'},
-          {text: 'Categoria da Receita',value: 'description', align: 'left'},
-          {text: 'Preço de Custo',value: 'cost'},
+          // {text: 'Categoria da Receita',value: 'description', align: 'left'},
+          {text: 'Vlr de Custo',value: 'cost'},
+          {text: 'Vlr de Lucro',value: 'profit'},
           {text: 'Custos Adicionais',value: 'cost'},
-          {text: 'Preço de Venda',value: 'cost'},
+          {text: 'Vlr de Venda',value: 'cost'},
           {text: 'Editar',value: 'cost'},
           {text: 'Excluir',value: 'cost'}
         ],
@@ -94,6 +106,9 @@ data () {
       editRecipe(recipe, modalItem){
         this.recipeEditable = recipe['.key'];
         this[modalItem] = true;
+      },
+      updateRecipes(){
+        this.updateRecipePrices();
       },
       getCategories(){
           this.$bindAsArray(
