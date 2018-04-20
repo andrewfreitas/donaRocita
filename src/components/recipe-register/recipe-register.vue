@@ -73,6 +73,7 @@
                       :items="categories"
                       item-text="name"
                       v-model="recipeItem.category"
+                      :rules="fieldRules.recipeItem.recipeItemCategoryRules"
                       ref="recipeItem.category"
                       required
                     ></v-select>
@@ -85,6 +86,7 @@
                       :items="availableMaterials"
                       item-text="name"
                       v-model="recipeItem.material"
+                      :rules="fieldRules.recipeItem.recipeItemMaterialRules"
                       ref="recipeItem.material"
                       required
                     ></v-select>
@@ -96,7 +98,7 @@
                       placeholder="0"
                       v-model="recipeItem.quantity"
                       ref="recipeItem.quantity"
-                      counter="5"
+                      counter="10"
                       required
                     ></v-text-field>
                   </v-flex>
@@ -194,7 +196,7 @@
             <v-spacer></v-spacer>
             <v-btn color="deep-orange darken-3" @click.stop="e1 = 4">Continuar</v-btn>
             <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
-            <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+            <v-btn color="deep-orange darken-3" @click="showModal = false;recipe.items = [];">Cancelar</v-btn>
           </v-card-actions>
         </v-stepper-content>
         <v-stepper-content step="4">
@@ -352,6 +354,14 @@ export default {
       recipeCategories:[],
       recipeItem:{},
       fieldRules:{
+        recipeItem:{
+          recipeItemCategoryRules:[
+            (v) => !!v || 'Selecione a Categoria',
+          ],
+          recipeItemMaterialRules:[
+            (v) => !!v || 'Selecione o Material',
+          ]                                    
+        },
         recipeCategoryRules:[
           (v) => !!v || 'Selecione a Categoria do Material'
         ],          
@@ -449,23 +459,26 @@ export default {
   methods: { 
       addItemRecipe(){
         if (this.$refs.form.validate()) {
-          
-          if(this.blockAddedRecipeItems(this.recipeItem)){
+
+          var recipeItem = _.clone(this.recipeItem);
+
+          recipeItem.category = recipeItem.category['.key'];
+          recipeItem.material = recipeItem.material['.key'];
+
+          if(this.blockAddedRecipeItems(recipeItem)){
             this.showSnackbar = true;
             this.snackBarText = 'Produto adicionado anteriormente!';
             return;
           };
 
-          this.recipeItem.category = this.recipeItem.category['.key'];
-          this.recipeItem.material = this.recipeItem.material['.key'];
-          this.recipeItem.price = this.getMaterialById(this.recipeItem.material).price;
-          this.recipe.items.push(_.clone(this.recipeItem));                     
+          recipeItem.price = this.getMaterialById(recipeItem.material).price;
+          this.recipe.items.push(recipeItem);                     
           this.clearFormItem();
         }
       },
       blockAddedRecipeItems(recipeItem){
         return _.filter(this.recipe.items, function(item){ 
-          return item.material == recipeItem.material['.key']
+          return item.material == recipeItem.material
           }).length > 0;
       },
       getCategories(){

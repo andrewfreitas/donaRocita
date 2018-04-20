@@ -12,7 +12,7 @@ export default {
     getMaterialCosts(item,material,updateMaterialPrice){
       var minimumCovert = convertUnit(1).from(material.unitPrice.type).to(item.unit.type);
       var materialPrice = (updateMaterialPrice && updateMaterialPrice == true) ? material.price : item.price;
-      var cost = numeral((numeral(materialPrice)._value / minimumCovert) * numeral(item.quantity)._value).format('0,0.00');
+      var cost = (numeral(materialPrice)._value / minimumCovert) * numeral(item.quantity)._value;
     
       return cost;
     }

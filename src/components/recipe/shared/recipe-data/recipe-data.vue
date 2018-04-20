@@ -83,7 +83,7 @@ export default {
             return numeral(recipe.priceProfit)._value;
         },
         formatPrice(value){
-            return numeral(value).format('$ 0,0.00')
+            return numeral(value).format('$ 0,0.00[0]');
         },        
         saveRecipe(recipe){
 

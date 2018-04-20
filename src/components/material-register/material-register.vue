@@ -76,7 +76,7 @@
               <v-spacer></v-spacer>
               <v-flex xs12 sm7>              
                   <v-select
-                    label="Preço por "
+                    label="Preço Unitário por "
                     placeholder="Selecione"
                     :items="priceUnities"
                     item-text="description"
@@ -166,7 +166,7 @@ export default {
       showMaterialsRegister: function(show){
           this.showModal = show;
           this.clearForm();
-          this.getMaterials();
+          this.getCategories();
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
@@ -223,6 +223,7 @@ export default {
       },      
       clearForm(){
         this.material = {};
+        this.categories = [];
         this.$refs.form.reset();
       }  
   },
