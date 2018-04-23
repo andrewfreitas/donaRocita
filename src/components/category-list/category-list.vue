@@ -35,7 +35,7 @@
             >
             <template slot="items" slot-scope="props">
               <td class="text-xs-left">{{ props.item.name }}</td>
-              <td class="text-xs-left">{{ props.item.description }}</td>
+              <!-- <td class="text-xs-left">{{ props.item.description }}</td> -->
               <td class="text-xs-right">
                 <v-btn fab dark  small color="green" @click="editCategory(props.item)">
                   <v-icon dark>mode_edit</v-icon>
@@ -51,7 +51,7 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <category-register :show-category-register.sync="showCategoryRegister" :category-editable="categoryEditable"></category-register> 
+    <category-register :category-register.sync="categoryRegister" :category-editable.sync="categoryEditable"></category-register> 
     <!-- {{users}} -->
   </div>
 </template>
@@ -67,12 +67,12 @@ export default {
   },
   data () {
     return {
-      showCategoryRegister: false,
+      categoryRegister: {},
       showPopMessage:false,
       search: '',   
       headers: [
         {text: 'Nome da Categoria', value: 'name', align: 'left'},
-        {text: 'Descrição da Categoria', value: 'description' , align: 'left'},
+        // {text: 'Descrição da Categoria', value: 'description' , align: 'left'},
         {text: 'Editar Categoria', value: 'delete' },
         {text: 'Excluir Categoria', value: 'delete' }
       ],
@@ -84,7 +84,11 @@ export default {
   },
   methods: {
     openModal(){
-      this.showCategoryRegister = true;
+      this.categoryRegister = {
+        isEditing:false,
+        categoryEditable:null,
+        showModal:true
+      }
     },
     getMaterials(){
         this.$bindAsArray(
@@ -104,8 +108,11 @@ export default {
       );
     },
     editCategory(category){
-      this.categoryEditable = category;
-      this.showCategoryRegister = true;
+      this.categoryRegister = {
+        isEditing:true,
+        categoryEditable:category,
+        showModal:true
+      }
     },
     removeCategory(category){
       if(this.verifyRelationship(category)){

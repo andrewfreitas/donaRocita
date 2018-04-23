@@ -23,7 +23,7 @@
                 counter="30"
               ></v-text-field>
             </v-flex>
-            <v-flex xs12>
+            <!-- <v-flex xs12>
               <v-text-field box dark
                 label="Descrição do Material"
                 v-model="material.description"
@@ -31,7 +31,7 @@
                 counter="50"
                 required
               ></v-text-field>
-            </v-flex>
+            </v-flex> -->
             <v-flex xs12>
               <v-select
                 label="Categoria"
@@ -225,6 +225,7 @@ export default {
         this.material = {};
         this.categories = [];
         this.$refs.form.reset();
+        this.material.price = 0;
       }  
   },
   beforeCreate () {

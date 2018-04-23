@@ -9,11 +9,10 @@
       <v-spacer></v-spacer>
       <v-layout justify-center>
         <v-form v-model="valid" ref="form" lazy-validation>
-          <v-flex xs12>
+          <v-flex shrink>
             <v-card ref="form">
               <v-card-text>
-                <v-layout row wrap>
-                <v-flex xs12>
+                <v-flex shrink>
                   <v-text-field box dark
                     label="Nome da Categoria"
                     v-model="category.name"
@@ -22,19 +21,10 @@
                     ref="category.name"
                     counter="30"
                     hint="Escolha um nome para a categoria do produto"
+                    persistent-hint
                     :rules="fieldRules.categoryNameRules"
                   ></v-text-field>
                 </v-flex>
-                <v-flex xs12>
-                  <v-text-field box dark
-                    label="Descrição da Categoria"
-                    v-model="category.description"
-                    ref="category.description"
-                    counter="50"
-                    hint="Descrição da categoria do produto"
-                  ></v-text-field>
-                </v-flex>
-                </v-layout>
               </v-card-text>
               <v-divider></v-divider>
               <v-card-actions>
@@ -61,7 +51,7 @@ import {db} from '@/components/shared/data-config/data-config.js';
 
 export default {
   name: 'categoryRegister',
-  props: ['showCategoryRegister','categoryEditable'],
+  props: ['categoryRegister','categoryEditable'],
   data () {
     return {
       fieldRules:{
@@ -70,7 +60,8 @@ export default {
           v => (v && v.length >= 5) || 'O nome da categoria deve ter no mínimo 5 caracteres',
           v => (v && v.length <= 30) || 'O nome da categoria deve ter no máximo 30 caracteres'
         ]  
-      },    
+      },
+      categoryEditable:{},    
       category:{},
       categories:[],
       valid:false,          
@@ -78,22 +69,25 @@ export default {
     }
   },
   watch: {
-      showCategoryRegister: function(show){
-          this.showModal = show;
-          this.clearForm();
-          this.getCategories();
+      categoryRegister: function(categoryRegister){
+          this.showModal = categoryRegister.showModal;
+          if(categoryRegister.isEditing){
+            this.category = _.find(this.categories,function(c){ return c['.key'] ==  categoryRegister.categoryEditable['.key']});  
+          }else{
+            this.clearForm();
+          }
       },
       showModal:function(showModal){
           this.$parent.$emit('showModal', showModal);
       },
       categoryEditable:function(category){
-        this.category = _.find(this.categories,function(c){ return c['.key'] ==  category['.key']});
+        
       }
   },
   methods: {
-      actvModal(showModal){
-          this.showModal = showModal;
-      },
+      // actvModal(showModal){
+      //     this.showModal = showModal;
+      // },
       saveCategory(){
 
         if (!this.category['.key']) {
@@ -122,6 +116,9 @@ export default {
         this.category = {};
         this.$refs.form.reset();
       }
+  },
+  mounted () {
+    this.getCategories();
   }  
 }
 </script>

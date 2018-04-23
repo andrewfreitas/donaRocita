@@ -46,7 +46,7 @@ export default {
                 totalCost += numeral(this.getRecipeItemCost(item,updateMaterialPrice))._value;
             });
 
-            recipe.formattedCost = this.formatPrice(totalCost);
+            recipe.formattedCost = this.formatPrice(totalCost,2);
             recipe.cost = totalCost;
 
             return recipe.formattedCost;
@@ -56,8 +56,8 @@ export default {
                                numeral(this.getRecipeProfitPrice(recipe) || 0)._value + 
                                numeral(recipe.adctionalPrice || 0)._value;
             
-            recipe.adctionalPriceFormatted = this.formatPrice(recipe.adctionalPrice);
-            recipe.totalCostFormatted = this.formatPrice(recipe.totalCost);
+            recipe.adctionalPriceFormatted = this.formatPrice(recipe.adctionalPrice,2);
+            recipe.totalCostFormatted = this.formatPrice(recipe.totalCost,2);
 
             return recipe.totalCostFormatted;
         },
@@ -69,7 +69,7 @@ export default {
             }
 
             recipe.unitPriceRecipe = unitPrice; 
-            recipe.unitPriceRecipeFormatted = this.formatPrice(unitPrice); 
+            recipe.unitPriceRecipeFormatted = this.formatPrice(unitPrice,2); 
 
             return recipe.unitPriceRecipeFormatted;            
         },
@@ -78,12 +78,12 @@ export default {
                 return numeral(this.getSummaryCost(recipe))._value * (numeral(recipe.percentProfit)._value / 100);
             }
 
-            recipe.priceProfitFormatted = this.formatPrice(recipe.priceProfit);
+            recipe.priceProfitFormatted = this.formatPrice(recipe.priceProfit,2);
 
             return numeral(recipe.priceProfit)._value;
         },
-        formatPrice(value){
-            return numeral(value).format('$ 0,0.00[0]');
+        formatPrice(value,precision){
+            return (precision && _.isNumber(precision) && precision > 0) ? numeral(_.round(value,2)).format('$ 0,0.00[0]') : numeral(value).format('$ 0,0.00[000]');
         },        
         saveRecipe(recipe){
 

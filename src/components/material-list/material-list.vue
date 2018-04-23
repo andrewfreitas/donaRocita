@@ -35,7 +35,7 @@
     >
     <template slot="items" slot-scope="props">
         <td class="text-xs-left">{{ props.item.name }}</td>
-        <td class="text-xs-left">{{ props.item.description }}</td>
+        <!-- <td class="text-xs-left">{{ props.item.description }}</td> -->
         <td class="text-xs-left">{{ getCategoryById(props.item.category) }}</td>
         <td class="text-xs-left">{{ props.item.formattedPrice }}</td>
         <td class="text-xs-right">
@@ -75,7 +75,7 @@ data () {
           search: '',
         headers: [
           {text: 'Nome do Material',value: 'name', align: 'left'},
-          {text: 'Descrição do Material', value: 'description' , align: 'left'},
+          // {text: 'Descrição do Material', value: 'description' , align: 'left'},
           {text: 'Categoria', value: 'category' , align: 'left'},
           {text: 'Preço Unit.', value: 'category' , align: 'left'},
           {text: 'Unid. Medida', value: 'unit' , align: 'center'},

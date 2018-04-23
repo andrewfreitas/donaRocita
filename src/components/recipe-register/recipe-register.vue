@@ -13,9 +13,9 @@
         <v-divider></v-divider>
         <v-stepper-step step="2" :complete="e1 > 2">Itens da Receita</v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step step="3" :complete="e1 > 3">Itens da Receita</v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step step="4">Salvar a Receita</v-stepper-step>
+        <!-- <v-stepper-step step="3" :complete="e1 > 3">Itens da Receita</v-stepper-step>
+        <v-divider></v-divider> -->
+        <v-stepper-step step="3">Salvar a Receita</v-stepper-step>
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="1">
@@ -154,10 +154,10 @@
             <v-spacer></v-spacer>
             <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Continuar</v-btn>
             <v-btn color="deep-orange darken-3" @click.native="e1 = 1">Voltar</v-btn>
-            <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+            <v-btn color="deep-orange darken-3" @click="closeModal()">Cancelar</v-btn>
           </v-card-actions>
         </v-stepper-content>
-        <v-stepper-content step="3">
+        <!-- <v-stepper-content step="3">
           <v-card color="secondary" class="mb-5" height="200px">
             <v-data-table
                 v-bind:headers="summaryHeaders"
@@ -198,8 +198,8 @@
             <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>
             <v-btn color="deep-orange darken-3" @click="showModal = false;recipe.items = [];">Cancelar</v-btn>
           </v-card-actions>
-        </v-stepper-content>
-        <v-stepper-content step="4">
+        </v-stepper-content> -->
+        <v-stepper-content step="3">
           <v-card color="secondary" class="mb-5" height="250px">
             <v-card-text>
             <v-layout row wrap>
@@ -297,8 +297,8 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="deep-orange darken-3" @click.stop="saveRecipe()">Salvar Receita</v-btn>
-            <v-btn color="deep-orange darken-3" @click.native="e1 = 3">Voltar</v-btn>          
-            <v-btn color="deep-orange darken-3" @click="showModal = false">Cancelar</v-btn>
+            <v-btn color="deep-orange darken-3" @click.native="e1 = 2">Voltar</v-btn>          
+            <v-btn color="deep-orange darken-3" @click="closeModal()">Cancelar</v-btn>
           </v-card-actions>
         </v-stepper-content>        
       </v-stepper-items>
@@ -385,15 +385,15 @@ export default {
         { text: 'Vlr Custo', value: 'cost' },
         { text: 'Excluir', value: 'delete',align: 'right', }
       ],
-      summaryHeaders: [
-        {
-          text: 'Nome do Material',
-          value: 'name'
-        },
-        { text: 'Quantidade', value: 'quantity' },
-        { text: 'Unidade de Medida', value: 'unit' },
-        { text: 'Vlr Custo', value: 'cost' }
-      ],              
+      // summaryHeaders: [
+      //   {
+      //     text: 'Nome do Material',
+      //     value: 'name'
+      //   },
+      //   { text: 'Quantidade', value: 'quantity' },
+      //   { text: 'Unidade de Medida', value: 'unit' },
+      //   { text: 'Vlr Custo', value: 'cost' }
+      // ],              
       recipes:[],
       categories:[],
       materials:[],
@@ -458,23 +458,28 @@ export default {
   },
   methods: { 
       addItemRecipe(){
-        if (this.$refs.form.validate()) {
+        try{
+          if (this.$refs.form.validate()) {
 
-          var recipeItem = _.clone(this.recipeItem);
+            var recipeItem = _.clone(this.recipeItem);
 
-          recipeItem.category = recipeItem.category['.key'];
-          recipeItem.material = recipeItem.material['.key'];
+            recipeItem.category = recipeItem.category['.key'];
+            recipeItem.material = recipeItem.material['.key'];
 
-          if(this.blockAddedRecipeItems(recipeItem)){
-            this.showSnackbar = true;
-            this.snackBarText = 'Produto adicionado anteriormente!';
-            return;
-          };
+            if(this.blockAddedRecipeItems(recipeItem)){
+              this.showSnackbar = true;
+              this.snackBarText = 'Produto adicionado anteriormente!';
+              return;
+            };
 
-          recipeItem.price = this.getMaterialById(recipeItem.material).price;
-          this.recipe.items.push(recipeItem);                     
-          this.clearFormItem();
+            recipeItem.price = this.getMaterialById(recipeItem.material).price;
+            this.recipe.items.push(recipeItem);                     
+            this.clearFormItem();
+          }
+        }catch(exception){
+
         }
+
       },
       blockAddedRecipeItems(recipeItem){
         return _.filter(this.recipe.items, function(item){ 
@@ -534,14 +539,23 @@ export default {
 
         this.recipe.recipeCategory = this.recipeCategory['.key'];
 
+        if(this.constraintPrice(this.recipe.totalCost)){
+            this.showSnackbar = true;
+            this.snackBarText = 'Esta receita possui valor menor que R$ 0,01 (1 centavo). Por favor, revisar os valores adicionados !';
+            return;          
+        }
+
         if(!this.recipe['.key']){  
           this.$firebaseRefs.recipes.push(_.clone(this.recipe));  
         }else{
           this.updateRecipe(this.recipe);
         }
   
-        this.showModal = false;
+        this.closeModal();
         this.clearForm();
+      },
+      constraintPrice(totalCost){
+        return Number(totalCost) <=0
       },
       updateRecipe(recipe){
         const copyObj = _.clone(recipe);
@@ -555,6 +569,10 @@ export default {
       },
       clearFormItem(){
         this.$refs.form.reset();
+      },
+      closeModal(){
+        this.recipe.items = [];
+        this.showModal = false;
       }
   },
   mounted () {
